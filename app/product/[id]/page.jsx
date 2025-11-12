@@ -3,18 +3,25 @@
 import { useState } from "react";
 import { Heart, Plus, Minus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { getProductById } from "@/lib/data";
-import { useShop } from "@/app/context/ShopContext";
 import Image from "next/image";
+import { useShop } from "@/app/context/ShopContext";
 
 const ProductDetails = () => {
   const params = useParams();
   const router = useRouter();
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [showFullDescription, setShowFullDescription] = useState(false);
-  const { addToCart, cartItems, updateCartItemQuantity } = useShop();
 
-  // Get product data
+  const {
+    addToCart,
+    cartItems,
+    updateCartItemQuantity,
+    toggleWishlist,
+    isInWishlist,
+    getProductById,
+  } = useShop();
+
+  const [showFullDescription, setShowFullDescription] = useState(false);
+
+  // ✅ get product directly from context
   const product = getProductById(params.id);
 
   if (!product) {
@@ -25,11 +32,15 @@ const ProductDetails = () => {
     );
   }
 
-  // Get current quantity from cart
+  // 🛒 Cart handling
   const cartItem = cartItems.find((item) => item._id === product._id);
   const quantity = cartItem ? cartItem.qty : 0;
 
-  // Handle Add / Increment / Decrement
+  // 💖 Wishlist handling
+  const isFavorite = isInWishlist(product._id);
+  const handleToggleWishlist = () => toggleWishlist(product);
+
+  // 🛒 Cart button handlers
   const handleAddToCart = () => addToCart(product);
   const handleIncrement = () =>
     updateCartItemQuantity(product._id, quantity + 1);
@@ -61,11 +72,11 @@ const ProductDetails = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Left - Image */}
+        {/* Left: Image */}
         <div className="relative">
           <div className="relative rounded-3xl overflow-hidden shadow-sm">
             <button
-              onClick={() => setIsFavorite(!isFavorite)}
+              onClick={handleToggleWishlist}
               className="absolute top-4 right-4 z-10 bg-white rounded-full p-2.5 shadow-md hover:shadow-lg transition-shadow"
             >
               <Heart
@@ -82,43 +93,15 @@ const ProductDetails = () => {
               <Image
                 width={100}
                 height={100}
-                src={product.imageUrl}
+                src={`${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl}`}
                 alt={product.name}
                 className="w-full h-full object-contain"
               />
             </div>
-
-            {/* India's Juiciest Chicken Badge */}
-            {product.category._id === "2" && (
-              <div className="absolute bottom-6 left-6">
-                <div className="bg-white rounded-full w-28 h-28 flex items-center justify-center shadow-lg">
-                  <svg viewBox="0 0 100 100" className="w-full h-full p-2">
-                    <defs>
-                      <path
-                        id="circlePath"
-                        d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0"
-                      />
-                    </defs>
-                    <text className="text-[8px] font-bold fill-gray-700">
-                      <textPath
-                        href="#circlePath"
-                        startOffset="50%"
-                        textAnchor="middle"
-                      >
-                        INDIA'S JUICIEST CHICKEN
-                      </textPath>
-                    </text>
-                    <text x="50" y="55" textAnchor="middle" className="text-2xl">
-                      🍗
-                    </text>
-                  </svg>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Right - Details */}
+        {/* Right: Details */}
         <div className="flex flex-col">
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
             {product.name}
@@ -126,7 +109,7 @@ const ProductDetails = () => {
 
           <p className="text-gray-600 text-base mb-5">{product.description}</p>
 
-          {/* Product Specs */}
+          {/* Product specs */}
           <div className="flex gap-6 mb-6 pb-6 border-b">
             <div className="flex items-center gap-2">
               <span className="text-2xl">⚖️</span>
@@ -158,19 +141,11 @@ const ProductDetails = () => {
             </div>
           )}
 
-          {/* Description */}
-          <p className="text-gray-700 text-base leading-relaxed mb-6">
-            Licious {product.name} is a premium cut that includes the leg,
-            breast & wings. This smaller, tender cut has equal-sized pieces for
-            uniform cooking and the juiciest bites. Perfect for a family of{" "}
-            {product.serves}.
-          </p>
-
-          {/* Nutritional Info */}
+          {/* Nutrition */}
           {product.nutrition && (
             <div className="mb-6 space-y-2 text-gray-700">
               <h3 className="font-bold text-gray-900 text-lg">
-                Nutritional Information: (Approx Values per 100 g)
+                Nutritional Information (per 100g)
               </h3>
               <p>Total Energy: {product.nutrition.energy}</p>
               <p>Carbohydrate: {product.nutrition.carbohydrate}</p>
@@ -179,7 +154,7 @@ const ProductDetails = () => {
             </div>
           )}
 
-          {/* Price & Add to Cart */}
+          {/* Price + Cart */}
           <div className="border-t pt-6">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -187,15 +162,15 @@ const ProductDetails = () => {
                   <span className="text-4xl font-bold text-gray-900">
                     ₹{product.price}
                   </span>
-                  <span className="text-lg text-green-600 font-semibold">
-                    {product.discount} off
-                  </span>
+                  {product.discount && (
+                    <span className="text-lg text-green-600 font-semibold">
+                      {product.discount} off
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-gray-500">
                   MRP:{" "}
-                  <span className="line-through">
-                    ₹{product.originalPrice}
-                  </span>{" "}
+                  <span className="line-through">₹{product.originalPrice}</span>{" "}
                   (incl. of all taxes)
                 </p>
               </div>
@@ -226,7 +201,6 @@ const ProductDetails = () => {
               )}
             </div>
 
-            {/* Safety & Delivery */}
             <div className="flex items-center justify-between">
               <a
                 href="#"

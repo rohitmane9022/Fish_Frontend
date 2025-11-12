@@ -5,10 +5,10 @@ const nextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '4000',
+        port: '4000', 
+        pathname: '/uploads/**',
       },
     ],
-    // optional: disable strict security for dev
     dangerouslyAllowSVG: true,
     unoptimized: true,
   },

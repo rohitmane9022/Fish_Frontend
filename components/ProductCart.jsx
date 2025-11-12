@@ -13,8 +13,8 @@ export default function ProductCart({
   weight,
   pieces,
   serves,
-  onAddToCart = () => {},
-  onToggleFavorite = () => {},
+  onClick
+  
 }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [quantity, setQuantity] = useState(0);
@@ -56,6 +56,7 @@ export default function ProductCart({
   width={200}
   height={137}
   className="w-full h-full object-cover rounded-2xl"
+  onClick={onClick}
 />
 
 
@@ -86,7 +87,7 @@ export default function ProductCart({
       </div>
 
      
-      <div className="space-y-2 p-2">
+      <div className="space-y-2 p-2"  onClick={onClick}>
         <h3 className="font-semibold text-base leading-6">{title}</h3>
     
         <div className="flex items-cente gap-1.5  ">
@@ -101,7 +102,7 @@ export default function ProductCart({
             ₹{originalPrice}
           </span>
           <span className="text-green-600 text-xs font-semibold">
-            {discount}
+            {discount}% off
           </span>
         </div>
       </div>

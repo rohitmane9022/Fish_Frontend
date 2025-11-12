@@ -9,7 +9,7 @@ const Categories = ({imageUrl,name}) => {
 
   return (
     <div className="flex flex-col items-center">
-        <Image width={130} height={130} src={imageUrl} alt={name}/>
+        <Image width={130} height={130} src={`${process.env.NEXT_PUBLIC_API_URL}${imageUrl}`} alt={name}/>
         <p className="text-base font-medium">{name}</p>
     </div>
   )
