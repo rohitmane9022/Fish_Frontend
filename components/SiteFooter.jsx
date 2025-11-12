@@ -1,11 +1,14 @@
-import Link from "next/link"
+'use client';
+import Link from 'next/link';
+import { useShop } from '@/app/context/ShopContext';
 
 export function SiteFooter() {
+  const { categories, loading } = useShop();
+
   return (
     <footer className="border-t">
       <div className="container max-w-6xl mx-auto px-4 py-10 grid sm:grid-cols-3 gap-10 sm:justify-items-end">
-
-       
+        {/* About */}
         <div>
           <h3 className="font-semibold mb-3">About</h3>
           <p className="text-sm text-muted-foreground">
@@ -14,56 +17,27 @@ export function SiteFooter() {
           </p>
         </div>
 
-        
+        {/* Categories (Dynamic) */}
         <div>
           <h3 className="font-semibold mb-3">Categories</h3>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <Link href="/category/1" className="hover:underline">
-                Fresh Fish
-              </Link>
-            </li>
-            <li>
-              <Link href="/category/2" className="hover:underline">
-                Fresh Chicken Raw
-              </Link>
-            </li>
-            <li>
-              <Link href="/category/3" className="hover:underline">
-                Zorabian (Raw Chicken / Ready to Cook Item)
-              </Link>
-            </li>
-            <li>
-              <Link href="/category/5" className="hover:underline">
-                Venky’s (Ready to Cook Product)
-              </Link>
-            </li>
-            <li>
-              <Link href="/category/4" className="hover:underline">
-                Captain Cook (Ready to Cook Product)
-              </Link>
-            </li>
-            <li>
-              <Link href="/category/6" className="hover:underline">
-                Gadre (Ready to Cook Fish)
-              </Link>
-            </li>
-            <li>
-              <Link href="/category/7" className="hover:underline">
-                McCain (Ready to Cook Product)
-              </Link>
-            </li>
-            <li>
-              <Link href="/category/8" className="hover:underline">
-                Green Peas
-              </Link>
-            </li>
-            <li>
-              <Link href="/category/9" className="hover:underline">
-                Paratha
-              </Link>
-            </li>
-          </ul>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : categories && categories.length > 0 ? (
+            <ul className="space-y-2 text-sm">
+              {categories.map((cat) => (
+                <li key={cat._id}>
+                  <Link
+                    href={`/category/${cat._id}`}
+                    className="hover:underline"
+                  >
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">No categories available.</p>
+          )}
         </div>
 
         {/* Contact */}
@@ -107,5 +81,5 @@ export function SiteFooter() {
         © {new Date().getFullYear()} Bombay Seafood — Since 1985. All rights reserved.
       </div>
     </footer>
-  )
+  );
 }
