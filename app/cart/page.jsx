@@ -2,8 +2,16 @@
 import { useShop } from '@/app/context/ShopContext';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Player } from '@lottiefiles/react-lottie-player';
+import dynamic from 'next/dynamic';
+
+// 🧩 Dynamically import Player — disable SSR for this component
+const Player = dynamic(
+  () => import('@lottiefiles/react-lottie-player').then((mod) => mod.Player),
+  { ssr: false }
+);
+
 import emptyCartAnimation from '@/public/emptyCartAnimation.json';
+
 
 export default function CartPage() {
   const { cartItems, removeFromCart, clearCart, updateCartItemQuantity } = useShop();

@@ -1,9 +1,18 @@
 "use client";
 
-import { useShop } from "@/app/context/ShopContext";
-import ProductCard2 from "@/components/ProductCard2";
-import { Player } from "@lottiefiles/react-lottie-player";
+'use client';
+import { useShop } from '@/app/context/ShopContext';
+import dynamic from 'next/dynamic';
+
+// 🧩 Dynamically import Player — disable SSR for this component
+const Player = dynamic(
+  () => import('@lottiefiles/react-lottie-player').then((mod) => mod.Player),
+  { ssr: false }
+);
+
+
 import WishlistAni from "@/public/WishlishAni.json";
+import ProductCard2 from '@/components/ProductCard2';
 
 export default function WishlistPage() {
   const { wishlist } = useShop();
