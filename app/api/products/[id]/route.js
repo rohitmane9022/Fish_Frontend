@@ -1,52 +1,88 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Product from "@/app/model/Product";
-import fs from "fs";
-import path from "path";
 
-export async function GET(req, { params }) {
+
+export async function GET(req, context) {
   await connectDB();
-  const product = await Product.findById(params.id).populate("category");
-  if (!product) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(product);
+  const { id } = await context.params; 
+
+  try {
+    const product = await Product.findById(id);
+    if (!product)
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+
+    return NextResponse.json(product);
+  } catch (error) {
+    console.error("❌ GET /api/products/[id] error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch product" },
+      { status: 500 }
+    );
+  }
 }
 
-// ✅ UPDATE Product
-export async function PUT(req, { params }) {
+// 🟦 Update a product
+export async function PUT(req, context) {
   await connectDB();
-  const id = params.id;
-  const formData = await req.formData();
+  const { id } = await context.params; // ✅ fix
 
-  const updateData = {};
-  for (const [key, value] of formData.entries()) {
-    if (["tags", "highlights", "nutrition"].includes(key)) {
-      updateData[key] = JSON.parse(value);
-    } else {
-      updateData[key] = value;
+  try {
+    const formData = await req.formData();
+    const updateData = {};
+
+    for (const [key, value] of formData.entries()) {
+      if (["tags", "highlights", "nutrition"].includes(key)) {
+        updateData[key] = JSON.parse(value);
+      } else if (["price", "originalPrice", "serves"].includes(key)) {
+        updateData[key] = Number(value);
+      } else if (key === "isHit") {
+        updateData[key] = value === "true";
+      } else {
+        updateData[key] = value;
+      }
     }
-  }
 
-  // ✅ Handle optional new image
-  const imageFile = formData.get("image");
-  if (imageFile && typeof imageFile.name === "string") {
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const uploadDir = path.join(process.cwd(), "public/uploads");
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    const fileName = `${Date.now()}-${imageFile.name}`;
-    const filePath = path.join(uploadDir, fileName);
-    fs.writeFileSync(filePath, buffer);
-    updateData.imageUrl = `/uploads/${fileName}`;
-  }
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
-  const updated = await Product.findByIdAndUpdate(id, updateData, { new: true });
-  return NextResponse.json({ success: true, data: updated });
+    if (!updatedProduct)
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+
+    return NextResponse.json({
+      success: true,
+      message: "✅ Product updated successfully",
+      data: updatedProduct,
+    });
+  } catch (error) {
+    console.error("❌ PUT /api/products/[id] error:", error);
+    return NextResponse.json(
+      { error: "Failed to update product" },
+      { status: 500 }
+    );
+  }
 }
 
-// ✅ DELETE Product
-export async function DELETE(req, { params }) {
+// 🟥 Delete a product
+export async function DELETE(req, context) {
   await connectDB();
-  const deleted = await Product.findByIdAndDelete(params.id);
-  if (!deleted) return NextResponse.json({ error: "Product not found" }, { status: 404 });
-  return NextResponse.json({ success: true, message: "Product deleted" });
+  const { id } = await context.params; // ✅ fix
+
+  try {
+    const deleted = await Product.findByIdAndDelete(id);
+    if (!deleted)
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+
+    return NextResponse.json({
+      success: true,
+      message: "🗑️ Product deleted successfully",
+    });
+  } catch (error) {
+    console.error("❌ DELETE /api/products/[id] error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete product" },
+      { status: 500 }
+    );
+  }
 }

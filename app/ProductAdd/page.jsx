@@ -31,7 +31,7 @@ export default function ProductManagement() {
     },
   });
 
-  // ✅ Fetch categories from Next.js API
+  // ✅ Fetch categories
   useEffect(() => {
     fetch("/api/categories")
       .then((res) => res.json())
@@ -39,7 +39,7 @@ export default function ProductManagement() {
       .catch((err) => console.error("Error fetching categories:", err));
   }, []);
 
-  // ✅ Fetch products from Next.js API
+  // ✅ Fetch products
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -145,8 +145,21 @@ export default function ProductManagement() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.category || !formData.subcategory) {
-      alert("Please select a valid category and subcategory");
+    // ✅ Validation fix
+    if (!formData.category) {
+      alert("Please select a category");
+      return;
+    }
+
+    const selectedCategoryObj = categories.find(
+      (cat) => cat.name === formData.category
+    );
+
+    if (
+      selectedCategoryObj?.subcategories?.length > 0 &&
+      !formData.subcategory
+    ) {
+      alert("Please select a subcategory for this category");
       return;
     }
 
@@ -156,9 +169,10 @@ export default function ProductManagement() {
 
     data.append("name", formData.name);
     data.append("price", formData.price);
-    data.append("subcategory", formData.subcategory);
     data.append("isHit", formData.isHit);
-    if (formData.originalPrice) data.append("originalPrice", formData.originalPrice);
+    if (formData.subcategory) data.append("subcategory", formData.subcategory);
+    if (formData.originalPrice)
+      data.append("originalPrice", formData.originalPrice);
     if (formData.discount) data.append("discount", formData.discount);
     if (formData.description) data.append("description", formData.description);
     if (formData.weight) data.append("weight", formData.weight);
@@ -166,9 +180,15 @@ export default function ProductManagement() {
     if (formData.serves) data.append("serves", formData.serves);
 
     if (formData.tags)
-      data.append("tags", JSON.stringify(formData.tags.split(",").map((t) => t.trim())));
+      data.append(
+        "tags",
+        JSON.stringify(formData.tags.split(",").map((t) => t.trim()))
+      );
     if (formData.highlights)
-      data.append("highlights", JSON.stringify(formData.highlights.split(",").map((h) => h.trim())));
+      data.append(
+        "highlights",
+        JSON.stringify(formData.highlights.split(",").map((h) => h.trim()))
+      );
     if (formData.nutrition)
       data.append("nutrition", JSON.stringify(formData.nutrition));
     if (formData.image) data.append("image", formData.image);
@@ -184,7 +204,11 @@ export default function ProductManagement() {
       });
 
       if (res.ok) {
-        alert(editingProduct ? "Product updated successfully!" : "Product added successfully!");
+        alert(
+          editingProduct
+            ? "Product updated successfully!"
+            : "Product added successfully!"
+        );
         resetForm();
         fetchProducts();
       } else {
@@ -231,20 +255,40 @@ export default function ProductManagement() {
               <h2 className="text-2xl font-semibold">
                 {editingProduct ? "Update Product" : "Add New Product"}
               </h2>
-              <button onClick={resetForm} className="text-2xl text-gray-500 hover:text-gray-700">
+              <button
+                onClick={resetForm}
+                className="text-2xl text-gray-500 hover:text-gray-700"
+              >
                 ×
               </button>
             </div>
 
             <div className="p-6 space-y-4">
-              {/* Inputs */}
-              <input type="text" name="name" value={formData.name} onChange={handleChange}
-                placeholder="Product name *" className="border rounded-lg p-2 w-full" />
-              <textarea name="description" value={formData.description} onChange={handleChange}
-                placeholder="Description" className="border rounded-lg p-2 w-full min-h-[80px]" />
+              {/* Product name & description */}
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Product name *"
+                className="border rounded-lg p-2 w-full"
+              />
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Description"
+                className="border rounded-lg p-2 w-full min-h-[80px]"
+              />
 
+              {/* Category & Subcategory */}
               <div className="grid grid-cols-2 gap-4">
-                <select name="category" value={formData.category} onChange={handleChange} className="border rounded-lg p-2 w-full">
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="border rounded-lg p-2 w-full"
+                >
                   <option value="">Select Category</option>
                   {categories.map((cat) => (
                     <option key={cat._id} value={cat.name}>
@@ -253,73 +297,161 @@ export default function ProductManagement() {
                   ))}
                 </select>
 
-                {selectedCategory && (
-                  <select name="subcategory" value={formData.subcategory} onChange={handleChange} className="border rounded-lg p-2 w-full">
+                {selectedCategory &&
+                selectedCategory.subcategories?.length > 0 ? (
+                  <select
+                    name="subcategory"
+                    value={formData.subcategory}
+                    onChange={handleChange}
+                    className="border rounded-lg p-2 w-full"
+                  >
                     <option value="">Select Subcategory</option>
                     {subcategories.map((sub) => (
-                      <option key={sub._id} value={sub.name}>
+                      <option key={sub._id || sub.name} value={sub.name}>
                         {sub.name}
                       </option>
                     ))}
                   </select>
+                ) : (
+                  <input
+                    type="text"
+                    name="subcategory"
+                    value=""
+                    readOnly
+                    placeholder="No subcategory available"
+                    className="border rounded-lg p-2 w-full bg-gray-100 text-gray-500"
+                  />
                 )}
               </div>
 
+              {/* Pricing */}
               <div className="grid grid-cols-3 gap-4">
-                <input type="number" name="price" value={formData.price} onChange={handleChange}
-                  placeholder="Price *" className="border rounded-lg p-2" />
-                <input type="number" name="originalPrice" value={formData.originalPrice} onChange={handleChange}
-                  placeholder="Original Price" className="border rounded-lg p-2" />
-                <input type="text" name="discount" value={formData.discount} onChange={handleChange}
-                  placeholder="Discount %" className="border rounded-lg p-2" />
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="Price *"
+                  className="border rounded-lg p-2"
+                />
+                <input
+                  type="number"
+                  name="originalPrice"
+                  value={formData.originalPrice}
+                  onChange={handleChange}
+                  placeholder="Original Price"
+                  className="border rounded-lg p-2"
+                />
+                <input
+                  type="text"
+                  name="discount"
+                  value={formData.discount}
+                  onChange={handleChange}
+                  placeholder="Discount %"
+                  className="border rounded-lg p-2"
+                />
               </div>
 
+              {/* Other fields */}
               <div className="grid grid-cols-3 gap-4">
-                <input type="text" name="weight" value={formData.weight} onChange={handleChange}
-                  placeholder="Weight (e.g. 500g)" className="border rounded-lg p-2" />
-                <input type="text" name="pieces" value={formData.pieces} onChange={handleChange}
-                  placeholder="Pieces (e.g. 6)" className="border rounded-lg p-2" />
-                <input type="number" name="serves" value={formData.serves} onChange={handleChange}
-                  placeholder="Serves (e.g. 2)" className="border rounded-lg p-2" />
+                <input
+                  type="text"
+                  name="weight"
+                  value={formData.weight}
+                  onChange={handleChange}
+                  placeholder="Weight (e.g. 500g)"
+                  className="border rounded-lg p-2"
+                />
+                <input
+                  type="text"
+                  name="pieces"
+                  value={formData.pieces}
+                  onChange={handleChange}
+                  placeholder="Pieces (e.g. 6)"
+                  className="border rounded-lg p-2"
+                />
+                <input
+                  type="number"
+                  name="serves"
+                  value={formData.serves}
+                  onChange={handleChange}
+                  placeholder="Serves (e.g. 2)"
+                  className="border rounded-lg p-2"
+                />
               </div>
 
-              <input type="text" name="tags" value={formData.tags} onChange={handleChange}
-                placeholder="Tags (comma separated)" className="border rounded-lg p-2 w-full" />
-              <input type="text" name="highlights" value={formData.highlights} onChange={handleChange}
-                placeholder="Highlights (comma separated)" className="border rounded-lg p-2 w-full" />
+              {/* Tags, highlights */}
+              <input
+                type="text"
+                name="tags"
+                value={formData.tags}
+                onChange={handleChange}
+                placeholder="Tags (comma separated)"
+                className="border rounded-lg p-2 w-full"
+              />
+              <input
+                type="text"
+                name="highlights"
+                value={formData.highlights}
+                onChange={handleChange}
+                placeholder="Highlights (comma separated)"
+                className="border rounded-lg p-2 w-full"
+              />
 
+              {/* Hit product */}
               <div className="flex items-center gap-2">
-                <input type="checkbox" name="isHit" checked={formData.isHit} onChange={handleChange} />
+                <input
+                  type="checkbox"
+                  name="isHit"
+                  checked={formData.isHit}
+                  onChange={handleChange}
+                />
                 <label className="text-sm font-medium">Is Hit Product?</label>
               </div>
 
+              {/* Nutrition */}
               <div>
                 <label className="block mb-1 font-medium">Nutrition</label>
                 <div className="grid grid-cols-2 gap-4">
                   {Object.keys(formData.nutrition).map((key) => (
-                    <input key={key} type="text" name={`nutrition.${key}`}
-                      value={formData.nutrition[key]} onChange={handleChange}
+                    <input
+                      key={key}
+                      type="text"
+                      name={`nutrition.${key}`}
+                      value={formData.nutrition[key]}
+                      onChange={handleChange}
                       placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-                      className="border rounded-lg p-2 w-full" />
+                      className="border rounded-lg p-2 w-full"
+                    />
                   ))}
                 </div>
               </div>
 
+              {/* Image */}
               <div>
                 <label className="block mb-1 font-medium">Product Image</label>
                 <input type="file" accept="image/*" onChange={handleImageChange} />
                 {imagePreview && (
-                  <img src={imagePreview} alt="Preview" className="mt-3 w-32 h-32 object-cover rounded-lg border" />
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="mt-3 w-32 h-32 object-cover rounded-lg border"
+                  />
                 )}
               </div>
 
+              {/* Buttons */}
               <div className="flex gap-4">
-                <button onClick={handleSubmit}
-                  className="flex-1 bg-black text-white py-2 rounded-lg hover:bg-gray-800">
+                <button
+                  onClick={handleSubmit}
+                  className="flex-1 bg-black text-white py-2 rounded-lg hover:bg-gray-800"
+                >
                   {editingProduct ? "Update" : "Add"}
                 </button>
-                <button onClick={resetForm}
-                  className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
+                <button
+                  onClick={resetForm}
+                  className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+                >
                   Cancel
                 </button>
               </div>
@@ -328,16 +460,24 @@ export default function ProductManagement() {
         </div>
       )}
 
-      {/* Product List */}
+      {/* Product list */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <div key={product._id} className="border rounded-xl p-4 shadow-md bg-white">
+          <div
+            key={product._id}
+            className="border rounded-xl p-4 shadow-md bg-white"
+          >
             {product.imageUrl && (
-              <img src={product.imageUrl} alt={product.name} className="w-full h-48 object-cover rounded-lg mb-4" />
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="w-full h-48 object-cover rounded-lg mb-4"
+              />
             )}
             <h3 className="font-semibold text-lg">{product.name}</h3>
             <p className="text-sm text-gray-500 mb-2">
-              {product.category?.name} - {product.subcategory}
+              {product.category?.name}{" "}
+              {product.subcategory && `- ${product.subcategory}`}
             </p>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xl font-bold">₹{product.price}</span>
@@ -353,12 +493,16 @@ export default function ProductManagement() {
               )}
             </div>
             <div className="flex gap-2">
-              <button onClick={() => handleEdit(product)}
-                className="flex-1 bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-600 text-sm">
+              <button
+                onClick={() => handleEdit(product)}
+                className="flex-1 bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-600 text-sm"
+              >
                 Edit
               </button>
-              <button onClick={() => handleDelete(product._id)}
-                className="flex-1 bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600 text-sm">
+              <button
+                onClick={() => handleDelete(product._id)}
+                className="flex-1 bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600 text-sm"
+              >
                 Delete
               </button>
             </div>

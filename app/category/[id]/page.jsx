@@ -137,7 +137,7 @@ export default function CategoryPage() {
               >
                 <div className="w-20 h-20 rounded-full overflow-hidden mb-2 bg-gray-100">
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${imgUrl}`}
+                    src={`${imgUrl}`}
                     alt={subcat}
                     width={80}
                     height={80}
@@ -185,7 +185,7 @@ export default function CategoryPage() {
           >
             <ProductCard2
               product={product}
-              image={`${product.imageUrl}`}
+              image={product.imageUrl}
               title={product?.name || "Unnamed Product"}
               weight={product?.weight}
               pieces={product?.pieces}

@@ -1,10 +1,11 @@
-
 "use client";
-import { Heart, Plus, Minus } from "lucide-react";
+import { useShop } from "@/app/context/ShopContext";
+import { Plus, Minus } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ProductCart({
+  id,
   image,
   title,
   price,
@@ -14,55 +15,59 @@ export default function ProductCart({
   pieces,
   serves,
   onClick
-  
 }) {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { addToCart, cartItems, updateCartItemQuantity } = useShop();
   const [quantity, setQuantity] = useState(0);
 
-  const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    onToggleFavorite();
+  // 🧠 Keep local quantity synced with global cart
+  useEffect(() => {
+    const item = cartItems.find((item) => item._id === id);
+    setQuantity(item ? item.qty : 0);
+  }, [cartItems, id]);
+
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    const product = {
+      _id: id,
+      image,
+      title,
+      price,
+      originalPrice,
+      discount,
+      weight,
+      pieces,
+      serves,
+    };
+    addToCart(product);
   };
 
-  const handleAdd = () => {
-    setQuantity(1);
-    onAddToCart(1);
+  const handleIncrement = (e) => {
+    e.stopPropagation();
+    updateCartItemQuantity(id, quantity + 1);
   };
 
-  const handleIncrement = () => {
-    const newQuantity = quantity + 1;
-    setQuantity(newQuantity);
-    onAddToCart(newQuantity);
-  };
-
-  const handleDecrement = () => {
-    if (quantity > 1) {
-      const newQuantity = quantity - 1;
-      setQuantity(newQuantity);
-      onAddToCart(newQuantity);
-    } else if (quantity === 1) {
-      setQuantity(0);
-      onAddToCart(0);
-    }
+  const handleDecrement = (e) => {
+    e.stopPropagation();
+    if (quantity > 1) updateCartItemQuantity(id, quantity - 1);
+    else updateCartItemQuantity(id, 0);
   };
 
   return (
     <div className="w-55 relative rounded-2xl">
-   
       <div className="relative h-40 bg-gray-100 rounded-2xl">
-      <Image
-  src={image}
-  alt={title}
-  width={200}
-  height={137}
-  className="w-full h-full object-cover rounded-2xl"
-  onClick={onClick}
-/>
+        <Image
+          src={image}
+          alt={title}
+          width={200}
+          height={137}
+          className="w-full h-full object-cover rounded-2xl"
+          onClick={onClick}
+        />
 
-
+        {/* 🛒 Add to Cart or Quantity Control */}
         {quantity === 0 ? (
           <button
-            onClick={handleAdd}
+            onClick={handleAddToCart}
             className="absolute -bottom-2 -right-4 z-20 bg-white border-2 rounded-lg py-1.5 px-2.5 shadow-lg transition-all duration-200"
           >
             <Plus size={20} className="text-red-500 font-bold" />
@@ -86,24 +91,31 @@ export default function ProductCart({
         )}
       </div>
 
-     
-      <div className="space-y-2 p-2"  onClick={onClick}>
+      <div className="space-y-2 p-2" onClick={onClick}>
         <h3 className="font-semibold text-base leading-6">{title}</h3>
-    
-        <div className="flex items-cente gap-1.5  ">
+
+        <div className="flex items-center gap-1.5">
           {weight && <p className="font-semibold text-sm">{weight}</p>}
-          {pieces && <span className="text-xs text-gray-600 flex items-center">| {pieces} Pieces</span>}
-          {serves && <span className="text-xs text-gray-600 flex items-center">| Serves {serves}</span>}
+          {pieces && (
+            <span className="text-xs text-gray-600">| {pieces} Pieces</span>
+          )}
+          {serves && (
+            <span className="text-xs text-gray-600">| Serves {serves}</span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
           <span className="text-lg font-bold text-gray-900">₹{price}</span>
-          <span className="text-gray-400 line-through text-sm">
-            ₹{originalPrice}
-          </span>
-          <span className="text-green-600 text-xs font-semibold">
-            {discount}% off
-          </span>
+          {originalPrice && (
+            <span className="text-gray-400 line-through text-sm">
+              ₹{originalPrice}
+            </span>
+          )}
+          {discount && (
+            <span className="text-green-600 text-xs font-semibold">
+              {discount}% off
+            </span>
+          )}
         </div>
       </div>
     </div>

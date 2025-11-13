@@ -11,7 +11,6 @@ export const ShopProvider = ({ children }) => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch categories & products from backend
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -40,7 +39,7 @@ export const ShopProvider = ({ children }) => {
     fetchData();
   }, []);
 
-  // 🧠 Load from localStorage
+ 
   useEffect(() => {
     const storedCart = localStorage.getItem("cartItems");
     const storedWishlist = localStorage.getItem("wishlist");

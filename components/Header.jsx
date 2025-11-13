@@ -24,7 +24,6 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
 
-  // ✅ Category and Subcategory navigation
   const handleCategoryClick = (categoryId) => {
     setCatMenuOpen(false);
     router.push(`/category/${categoryId}`);
@@ -35,7 +34,7 @@ export default function Header() {
     router.push(`/category/${categoryId}?sub=${encodeURIComponent(subcategoryName)}`);
   };
 
-  // Search filter
+ 
   const filteredProducts =
     searchQuery.trim() === ""
       ? []
@@ -56,7 +55,7 @@ export default function Header() {
   return (
     <header className="border-b bg-white sticky top-0 z-50">
       <div className="container max-w-6xl mx-auto px-4 py-4 flex justify-between items-center relative">
-        {/* Logo */}
+      
         <Link href="/" className="flex items-center min-w-[145px]">
           <Image
             src="/logo.png"
@@ -111,14 +110,12 @@ export default function Header() {
           )}
         </div>
 
-        {/* Desktop Right Icons */}
         <div className="hidden md:flex items-center gap-8 relative">
           <Link href="/store" className={getLinkClass("/store")}>
             <Store className="w-5 h-5" />
             <span className="text-base font-normal">Stores</span>
           </Link>
 
-          {/* Desktop Categories MegaMenu */}
           <div
             className="relative"
             onClick={() => setCatMenuOpen(!catMenuOpen)}
@@ -134,7 +131,7 @@ export default function Header() {
               Categories
             </button>
 
-            {/* Category MegaMenu */}
+            
             {catMenuOpen && (
               <div
                 className="absolute left-1/2 -translate-x-1/2 top-12 w-[640px] bg-white border rounded-lg shadow-xl z-30 flex"
@@ -155,7 +152,7 @@ export default function Header() {
                     >
                       {cat.imageUrl && (
                         <Image
-                        src={`${process.env.NEXT_PUBLIC_API_URL}${cat.imageUrl}`}
+                        src={`${cat.imageUrl}`}
                           alt={cat.name}
                           width={32}
                           height={32}
@@ -171,7 +168,7 @@ export default function Header() {
                   ))}
                 </div>
 
-                {/* Subcategories of active category */}
+              
                 <div className="flex flex-col flex-1 p-4 gap-2">
                   {(categories[activeCategoryIdx]?.subcategories || []).length > 0 ? (
                     categories[activeCategoryIdx].subcategories.map((subcat) => (
@@ -196,7 +193,7 @@ export default function Header() {
             )}
           </div>
 
-          {/* Wishlist */}
+         
           <Link
             href="/wishlist"
             className={`${
@@ -214,7 +211,7 @@ export default function Header() {
             )}
           </Link>
 
-          {/* Cart */}
+        
           <Link href="/cart" className={`relative ${getLinkClass("/cart")}`}>
             <ShoppingCart className="w-5 h-5" />
             <span className="text-base font-normal">Cart</span>
@@ -226,7 +223,6 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Hamburger for Mobile */}
         <button
           className="md:hidden text-gray-700 hover:text-gray-900"
           onClick={() => setMenuOpen(true)}
@@ -235,7 +231,7 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      
       {menuOpen && (
         <div className="fixed inset-0 z-50 bg-transparent backdrop-blur-sm flex justify-end">
           <div className="bg-white w-64 h-full shadow-xl p-6 flex flex-col">
