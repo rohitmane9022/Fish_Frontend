@@ -185,7 +185,7 @@ export default function CategoryPage() {
           >
             <ProductCard2
               product={product}
-              image={`http://localhost:4000${product.imageUrl}`}
+              image={`${product.imageUrl}`}
               title={product?.name || "Unnamed Product"}
               weight={product?.weight}
               pieces={product?.pieces}
