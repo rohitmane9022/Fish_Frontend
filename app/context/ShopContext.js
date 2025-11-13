@@ -18,8 +18,8 @@ export const ShopProvider = ({ children }) => {
         setLoading(true);
 
         const [catRes, prodRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`),
+          fetch(`/api/categories`),
+          fetch(`/api/products`),
         ]);
 
         const [catData, prodData] = await Promise.all([

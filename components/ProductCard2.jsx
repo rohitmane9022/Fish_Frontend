@@ -67,7 +67,7 @@ const ProductCard2 = ({ product }) => {
 
         <div className="w-full h-full flex items-center justify-center p-6">
           <Image
-            src={`${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl}`}
+            src={`${product.imageUrl}`}
             alt={product.name}
             width={300}
             height={225}

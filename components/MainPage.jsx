@@ -62,7 +62,7 @@ const Home1 = () => {
                   className="cursor-pointer"
                 >
                   <ProductCart
-                    image={`${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl}`}
+                    image={`${product.imageUrl}`}
                     title={product.name}
                     weight={product.weight}
                     pieces={product.pieces}
@@ -102,7 +102,7 @@ const Home1 = () => {
                   className="cursor-pointer"
                 >
                   <ProductCart
-                    image={`${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl}`}
+                    image={`${product.imageUrl}`}
                     title={product.name}
                     weight={product.weight}
                     pieces={product.pieces}
@@ -162,7 +162,7 @@ const Home1 = () => {
                   className="cursor-pointer"
                 >
                   <ProductCart
-                    image={`${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl}`}
+                    image={`${product.imageUrl}`}
                     title={product.name}
                     weight={product.weight}
                     pieces={product.pieces}
@@ -202,7 +202,7 @@ const Home1 = () => {
                   className="cursor-pointer"
                 >
                   <ProductCart
-                    image={`${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl}`}
+                    image={`${product.imageUrl}`}
                     title={product.name}
                     weight={product.weight}
                     pieces={product.pieces}

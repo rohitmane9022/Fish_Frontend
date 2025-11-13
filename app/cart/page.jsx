@@ -69,7 +69,7 @@ export default function CartPage() {
                 <div className="flex items-center gap-4">
                   {item.imageUrl && (
                     <Image
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
+                      src={`${item.imageUrl}`}
                       alt={item.name}
                       width={80}
                       height={80}

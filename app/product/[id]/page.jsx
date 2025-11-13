@@ -93,7 +93,7 @@ const ProductDetails = () => {
               <Image
                 width={100}
                 height={100}
-                src={`${process.env.NEXT_PUBLIC_API_URL}${product.imageUrl}`}
+                src={`${product.imageUrl}`}
                 alt={product.name}
                 className="w-full h-full object-contain"
               />
