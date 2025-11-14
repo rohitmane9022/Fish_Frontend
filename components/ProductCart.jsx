@@ -1,4 +1,5 @@
 "use client";
+
 import { useShop } from "@/app/context/ShopContext";
 import { Plus, Minus } from "lucide-react";
 import Image from "next/image";
@@ -6,31 +7,32 @@ import { useEffect, useState } from "react";
 
 export default function ProductCart({
   id,
-  image,
-  title,
+  imageUrl,
+  name,
   price,
   originalPrice,
   discount,
   weight,
   pieces,
   serves,
-  onClick
+  onClick,
 }) {
   const { addToCart, cartItems, updateCartItemQuantity } = useShop();
   const [quantity, setQuantity] = useState(0);
 
-  // 🧠 Keep local quantity synced with global cart
+  // ✅ Sync quantity with global cart
   useEffect(() => {
     const item = cartItems.find((item) => item._id === id);
     setQuantity(item ? item.qty : 0);
   }, [cartItems, id]);
 
+  // ✅ Add to cart
   const handleAddToCart = (e) => {
     e.stopPropagation();
     const product = {
       _id: id,
-      image,
-      title,
+      name,
+      imageUrl,
       price,
       originalPrice,
       discount,
@@ -56,34 +58,34 @@ export default function ProductCart({
     <div className="w-55 relative rounded-2xl">
       <div className="relative h-40 bg-gray-100 rounded-2xl">
         <Image
-          src={image}
-          alt={title}
+          src={imageUrl}
+          alt={name}
           width={200}
           height={137}
           className="w-full h-full object-cover rounded-2xl"
           onClick={onClick}
         />
 
-        {/* 🛒 Add to Cart or Quantity Control */}
+        {/* Cart Button */}
         {quantity === 0 ? (
           <button
             onClick={handleAddToCart}
-            className="absolute -bottom-2 -right-4 z-20 bg-white border-2 rounded-lg py-1.5 px-2.5 shadow-lg transition-all duration-200"
+            className="absolute -bottom-2 -right-4 z-20 bg-white border-2 rounded-lg py-1.5 px-2.5 shadow-lg"
           >
             <Plus size={20} className="text-red-500 font-bold" />
           </button>
         ) : (
-          <div className="absolute -bottom-2 -right-4 z-20 flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 shadow-xs border-2">
+          <div className="absolute -bottom-2 -right-4 z-20 flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 border-2 shadow">
             <button
               onClick={handleDecrement}
-              className="text-red-500 hover:text-red-600 transition-colors"
+              className="text-red-500 hover:text-red-600"
             >
               <Minus size={18} />
             </button>
             <span className="font-semibold text-base">{quantity}</span>
             <button
               onClick={handleIncrement}
-              className="text-red-500 hover:text-red-600 transition-colors"
+              className="text-red-500 hover:text-red-600"
             >
               <Plus size={18} />
             </button>
@@ -92,25 +94,23 @@ export default function ProductCart({
       </div>
 
       <div className="space-y-2 p-2" onClick={onClick}>
-        <h3 className="font-semibold text-base leading-6">{title}</h3>
+        <h3 className="font-semibold text-base leading-6">{name}</h3>
 
         <div className="flex items-center gap-1.5">
-          {weight && <p className="font-semibold text-sm">{weight}</p>}
-          {pieces && (
-            <span className="text-xs text-gray-600">| {pieces} Pieces</span>
-          )}
-          {serves && (
-            <span className="text-xs text-gray-600">| Serves {serves}</span>
-          )}
+          {weight && <p className="font-semibold text-sm">{weight}g</p>}
+          {pieces && <span className="text-xs text-gray-600">| {pieces} Pieces</span>}
+          {serves && <span className="text-xs text-gray-600">| Serves {serves}</span>}
         </div>
 
         <div className="flex items-center gap-2">
           <span className="text-lg font-bold text-gray-900">₹{price}</span>
+
           {originalPrice && (
             <span className="text-gray-400 line-through text-sm">
               ₹{originalPrice}
             </span>
           )}
+
           {discount && (
             <span className="text-green-600 text-xs font-semibold">
               {discount}% off

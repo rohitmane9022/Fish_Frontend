@@ -223,16 +223,16 @@ export default function Header() {
           </Link>
         </div>
 
-        <button
+        {/* <button
           className="md:hidden text-gray-700 hover:text-gray-900"
           onClick={() => setMenuOpen(true)}
         >
           <Menu size={28} />
-        </button>
+        </button> */}
       </div>
 
       
-      {menuOpen && (
+      {/* {menuOpen && (
         <div className="fixed inset-0 z-50 bg-transparent backdrop-blur-sm flex justify-end">
           <div className="bg-white w-64 h-full shadow-xl p-6 flex flex-col">
             <div className="flex justify-between items-center mb-8">
@@ -286,7 +286,7 @@ export default function Header() {
             </nav>
           </div>
         </div>
-      )}
+      )} */}
     </header>
   );
 }

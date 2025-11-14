@@ -137,12 +137,12 @@ export default function CategoryPage() {
               >
                 <div className="w-20 h-20 rounded-full overflow-hidden mb-2 bg-gray-100">
                   <Image
-                    src={`${imgUrl}`}
+                    src={imgUrl}
                     alt={subcat}
                     width={80}
                     height={80}
                     className="w-full h-full object-cover"
-                    onError={(e) => (e.target.src = "/uploads/default.jpg")}
+                   
                   />
                 </div>
                 <span className="text-sm font-medium text-center">{subcat}</span>
