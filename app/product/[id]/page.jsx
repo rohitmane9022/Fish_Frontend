@@ -144,8 +144,8 @@ const ProductDetails = () => {
           {/* Nutrition */}
           {product.nutrition && (
             <div className="mb-6 space-y-2 text-gray-700">
-              <h3 className="font-bold text-gray-900 text-lg">
-                Nutritional Information (per 100g)
+              <h3 className="font-bold text-gray-500 ">
+              Nutritional Information: (Approx Values per 100g)
               </h3>
               <p>Total Energy: {product.nutrition.energy}</p>
               <p>Carbohydrate: {product.nutrition.carbohydrate}</p>

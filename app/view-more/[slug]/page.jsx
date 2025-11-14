@@ -62,7 +62,7 @@ export default function ViewMorePage() {
   }
 
   return (
-    <section className="container max-w-6xl mx-auto py-8">
+    <section className="container max-w-6xl mx-auto py-8 px-5">
       <h2 className="text-3xl font-bold mb-4 capitalize">
         {slug.replaceAll("-", " ")}
       </h2>

@@ -135,12 +135,12 @@ export default function CategoryPage() {
                     : "opacity-60 hover:opacity-100"
                 }`}
               >
-                <div className="w-20 h-20 rounded-full overflow-hidden mb-2 bg-gray-100">
+                <div className="w-22 h-22 rounded-full overflow-hidden mb-2 ">
                   <Image
                     src={imgUrl}
                     alt={subcat}
-                    width={80}
-                    height={80}
+                    width={100}
+                    height={100}
                     className="w-full h-full object-cover"
                    
                   />
@@ -152,26 +152,10 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* 🧰 Filters */}
-      <div className="flex items-center justify-between mb-6 py-3 border-y">
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          <Filter size={18} />
-          <span className="font-medium">Filters</span>
-        </button>
-
-        <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 rounded-lg border border-orange-200">
-            <Clock size={18} />
-            <span className="font-medium">30min delivery</span>
-          </button>
-        </div>
-      </div>
+    
 
       {/* 📦 Product Count */}
-      <p className="text-gray-700 font-medium mb-6">
+      <p className="text-gray-700 font-medium mb-6 border-b-[1.5px] pb-3">
         {filteredProducts?.length || 0} Items available
       </p>
 

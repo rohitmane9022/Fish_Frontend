@@ -42,11 +42,11 @@ const Home1 = () => {
   const currentHits = products.filter((p) => p.isHit === true);
 
   return (
-    <div className="space-y-10">
+    <div className="">
       <div className="container max-w-6xl mx-auto px-6 py-10">
 
         {/* ✅ Current Hits */}
-        <section>
+        <section className="mb-5">
           <h2 className="text-[22px] font-bold">Our Current Hits</h2>
           <p className="text-base text-gray-600 mb-4">Here's what everyone's eating!</p>
 
@@ -78,7 +78,7 @@ const Home1 = () => {
         </section>
 
         {/* ✅ Fish */}
-        <section>
+        <section className="mb-5">
           <h2 className="text-[21px] font-bold">Fish, Exclusive Fish and Seafood</h2>
           <p className="text-base text-gray-600 mb-4">Caught on the same day</p>
 
@@ -102,7 +102,7 @@ const Home1 = () => {
 
             <div
               onClick={() => router.push("/view-more/Fresh-exclusive-Fish-and-Seafood")}
-              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48]"
+              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48] font-semibold cursor-pointer"
             >
               View More
             </div>
@@ -110,7 +110,7 @@ const Home1 = () => {
         </section>
 
         {/* ✅ Categories */}
-        <section>
+        <section className="mb-5">
           <h2 className="text-[22px] font-bold">Shop by Categories</h2>
           <p className="text-base text-gray-600 mb-4">Freshest meats and much more!</p>
 
@@ -129,7 +129,7 @@ const Home1 = () => {
         </section>
 
         {/* ✅ Chicken */}
-        <section>
+        <section className="mb-5">
           <h2 className="text-[21px] font-bold">Best of Chicken</h2>
           <p className="text-base text-gray-600 mb-4">Our most tender chicken cuts!</p>
 
@@ -153,7 +153,7 @@ const Home1 = () => {
 
             <div
               onClick={() => router.push("/view-more/chicken")}
-              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48]"
+              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48] font-semibold cursor-pointer"
             >
               View More
             </div>
@@ -161,7 +161,7 @@ const Home1 = () => {
         </section>
 
         {/* ✅ Ready to Cook */}
-        <section>
+        <section >
           <h2 className="text-[21px] font-bold">Ready to Cook</h2>
           <p className="text-base text-gray-600 mb-4">Quick and easy meals!</p>
 
@@ -185,7 +185,7 @@ const Home1 = () => {
 
             <div
               onClick={() => router.push("/view-more/ready-to-cook")}
-              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48]"
+              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48] font-semibold cursor-pointer"
             >
               View More
             </div>
