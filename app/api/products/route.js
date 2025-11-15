@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Product from "@/app/model/Product";
+import cloudinary from "@/lib/cloudinary";
 
 export async function GET(req) {
   await connectDB();

@@ -3,15 +3,15 @@ import { connectDB } from "@/lib/db";
 import Product from "@/app/model/Product";
 import cloudinary from "@/lib/cloudinary";
 
-export async function PUT(req, { params }) {
+// UPDATE PRODUCT
+export async function PUT(req, context) {
   await connectDB();
-  const { id } = params; // THIS is [id]
+  const { id } = await context.params;   // 👈 IMPORTANT FIX
 
   try {
     const formData = await req.formData();
     const updateData = {};
 
-    // Process text fields
     for (const [key, value] of formData.entries()) {
       if (key === "image") continue;
 
@@ -26,12 +26,9 @@ export async function PUT(req, { params }) {
       }
     }
 
-    // Get old product to delete old image
     const oldProduct = await Product.findById(id);
-
     const imageFile = formData.get("image");
 
-    // If new image uploaded
     if (imageFile && imageFile.name) {
       const bytes = await imageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
@@ -43,7 +40,6 @@ export async function PUT(req, { params }) {
 
       updateData.imageUrl = uploaded.secure_url;
 
-      // Delete old image from cloudinary
       if (oldProduct?.imageUrl) {
         const publicId = oldProduct.imageUrl.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`products/${publicId}`);
@@ -63,6 +59,37 @@ export async function PUT(req, { params }) {
     console.error("UPDATE ERROR:", error);
     return NextResponse.json(
       { error: "Error updating product" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE PRODUCT
+export async function DELETE(req, context) {
+  await connectDB();
+  const { id } = await context.params;  // 👈 FIXED
+
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    if (product.imageUrl) {
+      const publicId = product.imageUrl.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(`products/${publicId}`);
+    }
+
+    await Product.findByIdAndDelete(id);
+
+    return NextResponse.json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
+    return NextResponse.json(
+      { error: "Error deleting product" },
       { status: 500 }
     );
   }
