@@ -40,8 +40,9 @@ export default function CategoryPage() {
 
   // ✅ Safely filter products that belong to this category
   const categoryProducts = useMemo(() => {
-    return products.filter((p) => p?.category?._id === categoryId);
+    return products.filter((p) => p?.category === categoryId);
   }, [categoryId, products]);
+  
 
   // ✅ Build subcategory list safely
   const subcategories = useMemo(() => {
@@ -56,9 +57,7 @@ export default function CategoryPage() {
   // ✅ Filter products by selected subcategory
   const filteredProducts = useMemo(() => {
     if (selectedSubcategory === "All") return categoryProducts;
-    return categoryProducts.filter(
-      (p) => p?.subcategory === selectedSubcategory
-    );
+    return categoryProducts.filter((p) => p?.subcategory === selectedSubcategory);
   }, [categoryProducts, selectedSubcategory]);
 
   // ✅ Get subcategory image
