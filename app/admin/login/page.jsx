@@ -8,7 +8,7 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
 
   const handleLogin = () => {
-    if (username === "rohitmane9022" && password === "90228899") {
+    if (username === "Bombayseafood1985@gmail.com" && password === "Tajuddin") {
       localStorage.setItem("adminLoggedIn", "true");
       window.location.href = "/admin"; 
     } else {
