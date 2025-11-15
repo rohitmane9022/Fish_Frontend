@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
             <Header />
 
             {/* Main Content */}
-            <main className="flex-1 pb-28"> 
+            <main className="flex-1 "> 
               {/* ⬅ pb-28 ensures content doesn't hide behind mobile nav */}
               {children}
             </main>

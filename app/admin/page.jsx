@@ -3,27 +3,13 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function ProductManagement() {
-  // ---------------- LOGIN PROTECTION ----------------
+  
   const [allowed, setAllowed] = useState(false);
-
-  useEffect(() => {
-    const logged = localStorage.getItem("adminLoggedIn");
-    if (logged === "true") {
-      setAllowed(true);
-    } else {
-      window.location.href = "/admin/login";
-    }
-  }, []);
-
-  if (!allowed) return null;
-
-  // ---------------- YOUR PRODUCT MANAGEMENT LOGIC ----------------
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -47,7 +33,25 @@ export default function ProductManagement() {
     },
   });
 
-  // Fetch categories
+  const fetchProducts = () => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error("Error fetching products:", err));
+  };
+
+  
+
+  useEffect(() => {
+    const logged = localStorage.getItem("adminLoggedIn");
+    if (logged === "true") {
+      setAllowed(true);
+    } else {
+      window.location.href = "/admin/login";
+    }
+    
+  }, []);
+
   useEffect(() => {
     fetch("/api/categories")
       .then((res) => res.json())
@@ -55,17 +59,13 @@ export default function ProductManagement() {
       .catch((err) => console.error("Error fetching categories:", err));
   }, []);
 
-  // Fetch products
+ 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  const fetchProducts = () => {
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch((err) => console.error("Error fetching products:", err));
-  };
+  if (!allowed) return null;
+
 
   const selectedCategory = categories.find(
     (cat) => cat.name === formData.category
@@ -247,11 +247,10 @@ export default function ProductManagement() {
     }
   };
 
-  // -------------------------- UI ----------------------------
+  
   return (
     <div className="max-w-7xl mx-auto my-10 px-4">
 
-      {/* Logout Button */}
       <div className="flex justify-end mb-5">
         <button
           onClick={() => {
@@ -264,7 +263,7 @@ export default function ProductManagement() {
         </button>
       </div>
 
-      {/* Header */}
+     
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Product Management</h1>
         <button
@@ -278,7 +277,7 @@ export default function ProductManagement() {
         </button>
       </div>
 
-      {/* ---------------- FORM MODAL ---------------- */}
+      
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
@@ -295,7 +294,7 @@ export default function ProductManagement() {
             </div>
 
             <div className="p-6 space-y-4">
-              {/* Product name */}
+              
               <input
                 type="text"
                 name="name"
@@ -305,13 +304,13 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full"
               />
 
-              {/* Description */}
+            
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Description"
-                className="border rounded-lg p-2 w-full min-h-[80px]"
+                className="border rounded-lg p-2 w-full min-h-20"
               />
 
               {/* Category */}
@@ -460,19 +459,45 @@ export default function ProductManagement() {
               </div>
 
               {/* Image */}
-              <div>
-                <label className="font-medium">Product Image</label>
-                <input type="file" accept="image/*" onChange={handleImageChange} />
-                {imagePreview && (
-                  <Image
-                    src={imagePreview}
-                    className="mt-3 w-32 h-32 object-cover border rounded-lg"
-                    width={100}
-                    height={100}
-                    alt=""
-                  />
-                )}
-              </div>
+              <div className="space-y-2">
+  <label className="font-medium text-sm text-gray-700">Product Image</label>
+
+  {/* Upload Box */}
+  <div className="flex items-center gap-4">
+    <label
+      htmlFor="product-image"
+      className="cursor-pointer bg-gray-100 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition text-sm"
+    >
+      Choose Image
+    </label>
+
+    <input
+      id="product-image"
+      type="file"
+      accept="image/*"
+      onChange={handleImageChange}
+      className="hidden"
+    />
+
+    <span className="text-xs text-gray-500">
+      JPG, PNG or JPEG (max 5MB)
+    </span>
+  </div>
+
+  {/* Preview */}
+  {imagePreview && (
+    <div className="mt-3">
+      <Image
+        src={imagePreview}
+        width={130}
+        height={130}
+        alt="Product Preview"
+        className="w-32 h-32 object-cover border rounded-xl shadow-sm"
+      />
+    </div>
+  )}
+</div>
+
 
               {/* Buttons */}
               <div className="flex gap-4 mt-4">
@@ -505,10 +530,10 @@ export default function ProductManagement() {
             {product.imageUrl && (
               <Image
                 src={product.imageUrl}
+                alt={product.name}
                 width={100}
                 height={100}
                 className="w-full h-48 object-cover rounded-lg mb-4"
-                alt={product.name}
               />
             )}
 

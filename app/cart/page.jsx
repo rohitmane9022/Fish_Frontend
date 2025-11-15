@@ -80,7 +80,7 @@ export default function CartPage() {
         </div>
       ) : (
         <div className="grid md:grid-cols-3 gap-5">
-          {/* Left Section: Cart Items */}
+          
           <div className="md:col-span-2 space-y-6">
           {cartItems.map((item) => (
   <div
@@ -89,7 +89,7 @@ export default function CartPage() {
 >
   <div className="flex gap-4 items-start flex-wrap">
 
-    {/* IMAGE */}
+    
     <Image
       src={item.imageUrl}
       alt={item.name}
@@ -98,16 +98,16 @@ export default function CartPage() {
       className="rounded-xl object-cover border"
     />
 
-    {/* RIGHT SECTION */}
+   
     <div className="flex-1 flex flex-col">
 
-      {/* NAME + REMOVE */}
+     
       <div className="flex justify-between items-start w-full">
         <h2 className="text-base font-semibold text-gray-900 leading-tight max-w-[70%] sm:max-w-full">
           {item.name}
         </h2>
 
-        {/* REMOVE BUTTON */}
+      
         <button
           onClick={() => removeFromCart(item._id)}
           className="text-rose-600 text-sm font-bold hover:underline sm:mt-0 mt-2"
@@ -116,10 +116,10 @@ export default function CartPage() {
         </button>
       </div>
 
-      {/* WEIGHT */}
+      
       <p className="text-sm text-gray-500 mt-1">{item.weight}g</p>
 
-      {/* PRICE + QTY (DESKTOP) */}
+     
       <div className="hidden sm:flex justify-between items-center mt-3">
 
         <p className="font-semibold text-gray-900 text-lg">
