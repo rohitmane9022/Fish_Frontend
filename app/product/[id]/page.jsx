@@ -17,6 +17,7 @@ const ProductDetails = () => {
     toggleWishlist,
     isInWishlist,
     getProductById,
+    loading
   } = useShop();
 
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -24,10 +25,23 @@ const ProductDetails = () => {
   // ✅ get product directly from context
   const product = getProductById(params.id);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-full py-20">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-[#e11d48] border-t-transparent rounded-full animate-spin" />
+          <p className="text-lg font-semibold text-gray-700">
+            Loading products...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600">Product not found</p>
+        <p className="text-center text-gray-600">Please can you Refresh page again!</p>
       </div>
     );
   }

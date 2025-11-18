@@ -56,9 +56,14 @@ export default function ViewMorePage() {
 
   if (loading) {
     return (
-      <section className="container max-w-6xl mx-auto py-12 text-center">
-        <p className="text-gray-500">Loading products...</p>
-      </section>
+      <div className="flex items-center justify-center min-h-full py-20">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-[#e11d48] border-t-transparent rounded-full animate-spin" />
+          <p className="text-lg font-semibold text-gray-700">
+            Loading products...
+          </p>
+        </div>
+      </div>
     );
   }
 

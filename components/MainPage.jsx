@@ -32,6 +32,14 @@ const Home1 = () => {
     );
   }
 
+  if (!products || !categories) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <p className="text-center text-gray-600">Please can you Refresh the page again!</p>
+      </div>
+    );
+  }
+
   // Return category name directly
   const getCategoryName = (product) => {
     return product?.category?.name?.toLowerCase() || "";
