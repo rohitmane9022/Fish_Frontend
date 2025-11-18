@@ -5,6 +5,7 @@ import { ShopProvider } from "@/app/context/ShopContext";
 import { SiteFooter } from "@/components/SiteFooter";
 import MobileNav from "@/components/MobileNav";      // ⬅ ADD THIS
 import CartPopup from "@/components/CartPopup";      // ⬅ ADD THIS
+import { Toaster } from "react-hot-toast";
 
 export const metadata = {
   title: "Bombay Fresh Fish",
@@ -16,6 +17,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="flex flex-col min-h-screen">
         <ShopProvider>
+        <Toaster position="top-right" />
           <Suspense fallback={null}>
             
             {/* Header */}

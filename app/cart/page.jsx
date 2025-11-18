@@ -1,30 +1,27 @@
 "use client";
 import { useShop } from "@/app/context/ShopContext";
-import { useState } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { X } from "lucide-react";
+import emptyCartAnimation from "@/public/emptyCartAnimation.json";
+import { useEffect } from "react";
 
 const Player = dynamic(
   () => import("@lottiefiles/react-lottie-player").then((mod) => mod.Player),
   { ssr: false }
 );
 
-import emptyCartAnimation from "@/public/emptyCartAnimation.json";
-import { X } from "lucide-react";
-
 export default function CartPage() {
-  const { cartItems, removeFromCart, clearCart, updateCartItemQuantity } =
-    useShop();
+  const {
+    cartItems,
+    removeFromCart,
+    clearCart,
+    updateCartItemQuantity,
+    userData,
+    setUserData,
+  } = useShop();
 
-  const [userData, setUserData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    city: "",
-    pincode: "",
-  });
-
+  // Total Amount
   const totalAmount = cartItems.reduce(
     (sum, item) => sum + item.price * item.qty,
     0
@@ -57,9 +54,9 @@ export default function CartPage() {
       userData.email || "N/A"
     }%0AAddress: ${userData.address}%0ACity: ${userData.city}%0APincode: ${
       userData.pincode
-    }%0A`;
+    }`;
 
-    const whatsappURL = `https://wa.me/918356869325?text=${message}`;
+    const whatsappURL = `https://wa.me/919769694115?text=${message}`;
     window.open(whatsappURL, "_blank");
     clearCart();
   };
@@ -80,120 +77,108 @@ export default function CartPage() {
         </div>
       ) : (
         <div className="grid md:grid-cols-3 gap-5">
-          
+          {/* CART ITEMS */}
           <div className="md:col-span-2 space-y-6">
-          {cartItems.map((item) => (
-  <div
-  key={item._id}
-  className="bg-white rounded-2xl shadow-sm border p-4 w-full transition hover:shadow-md"
->
-  <div className="flex gap-4 items-start flex-wrap">
+            {cartItems.map((item) => (
+              <div
+                key={item._id}
+                className="bg-white rounded-2xl shadow-sm border p-4 w-full transition hover:shadow-md"
+              >
+                <div className="flex gap-4 items-start flex-wrap">
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.name}
+                    width={80}
+                    height={80}
+                    className="rounded-xl object-cover border"
+                  />
 
-    
-    <Image
-      src={item.imageUrl}
-      alt={item.name}
-      width={80}
-      height={80}
-      className="rounded-xl object-cover border"
-    />
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex justify-between items-start w-full">
+                      <h2 className="text-base font-semibold text-gray-900 leading-tight">
+                        {item.name}
+                      </h2>
 
-   
-    <div className="flex-1 flex flex-col">
+                      <button
+                        onClick={() => removeFromCart(item._id)}
+                        className="text-rose-600"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
 
-     
-      <div className="flex justify-between items-start w-full">
-        <h2 className="text-base font-semibold text-gray-900 leading-tight max-w-[70%] sm:max-w-full">
-          {item.name}
-        </h2>
+                    <p className="text-sm text-gray-500 mt-1">{item.weight}g</p>
 
-      
-        <button
-          onClick={() => removeFromCart(item._id)}
-          className="text-rose-600 text-sm font-bold hover:underline sm:mt-0 mt-2"
-        >
-          <X size={18} />
-        </button>
-      </div>
+                    {/* Desktop Qty */}
+                    <div className="hidden sm:flex justify-between items-center mt-3">
+                      <p className="font-semibold text-gray-900 text-lg">
+                        ₹{item.price * item.qty}
+                      </p>
 
-      
-      <p className="text-sm text-gray-500 mt-1">{item.weight}g</p>
+                      <div className="flex items-center bg-gray-50 border rounded-lg overflow-hidden shadow-inner h-9">
+                        <button
+                          onClick={() =>
+                            updateCartItemQuantity(item._id, item.qty - 1)
+                          }
+                          disabled={item.qty === 1}
+                          className="px-3 text-lg"
+                        >
+                          −
+                        </button>
+                        <span className="px-4">{item.qty}</span>
+                        <button
+                          onClick={() =>
+                            updateCartItemQuantity(item._id, item.qty + 1)
+                          }
+                          className="px-3 text-lg"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
 
-     
-      <div className="hidden sm:flex justify-between items-center mt-3">
+                    {/* Mobile Qty */}
+                    <div className="flex sm:hidden justify-between mt-3">
+                      <p className="font-semibold text-gray-900 text-lg">
+                        ₹{item.price * item.qty}
+                      </p>
 
-        <p className="font-semibold text-gray-900 text-lg">
-          ₹{item.price * item.qty}
-        </p>
-
-        <div className="flex items-center bg-gray-50 border rounded-lg overflow-hidden shadow-inner h-9">
-          <button
-            onClick={() => updateCartItemQuantity(item._id, item.qty - 1)}
-            disabled={item.qty === 1}
-            className="px-3 py-1 text-lg font-bold text-gray-700 hover:bg-gray-200 disabled:opacity-30"
-          >
-            −
-          </button>
-          <span className="px-4 text-gray-900 font-medium">{item.qty}</span>
-          <button
-            onClick={() => updateCartItemQuantity(item._id, item.qty + 1)}
-            className="px-3 py-1 text-lg font-bold text-gray-700 hover:bg-gray-200"
-          >
-            +
-          </button>
-        </div>
-      </div>
-
-      {/* PRICE + QTY (MOBILE STACKED) */}
-      <div className="flex flex-col sm:hidden w-full mt-3 gap-3">
-
-        <p className="font-semibold text-gray-900 text-lg">
-          ₹{item.price * item.qty}
-        </p>
-
-        <div className="flex items-center justify-between w-full">
-
-          {/* Qty Controls Left */}
-          <div className="flex items-center bg-gray-50 border rounded-lg overflow-hidden shadow-inner h-9">
-            <button
-              onClick={() => updateCartItemQuantity(item._id, item.qty - 1)}
-              disabled={item.qty === 1}
-              className="px-3 py-1 text-lg font-bold text-gray-700 hover:bg-gray-200 disabled:opacity-30"
-            >
-              −
-            </button>
-            <span className="px-4 text-gray-900 font-medium">{item.qty}</span>
-            <button
-              onClick={() => updateCartItemQuantity(item._id, item.qty + 1)}
-              className="px-3 py-1 text-lg font-bold text-gray-700 hover:bg-gray-200"
-            >
-              +
-            </button>
+                      <div className="flex items-center bg-gray-50 border rounded-lg overflow-hidden shadow-inner h-9">
+                        <button
+                          onClick={() =>
+                            updateCartItemQuantity(item._id, item.qty - 1)
+                          }
+                          disabled={item.qty === 1}
+                          className="px-3 text-lg"
+                        >
+                          −
+                        </button>
+                        <span className="px-4">{item.qty}</span>
+                        <button
+                          onClick={() =>
+                            updateCartItemQuantity(item._id, item.qty + 1)
+                          }
+                          className="px-3 text-lg"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
-        </div>
-
-      </div>
-    </div>
-
-  </div>
-</div>
-
-))}
-
-          </div>
-
-          {/* Right Section: Delivery Info + Total */}
+          {/* DELIVERY FORM */}
           <div className="bg-white shadow-lg rounded-xl p-6 space-y-5 h-fit">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Delivery Details
-            </h2>
+            <h2 className="text-xl font-semibold">Delivery Details</h2>
 
             <div className="space-y-3">
               <input
                 type="text"
                 placeholder="Full Name"
-                className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500"
+                className="w-full border rounded-lg px-4 py-2"
                 value={userData.name}
                 onChange={(e) =>
                   setUserData({ ...userData, name: e.target.value })
@@ -203,7 +188,7 @@ export default function CartPage() {
               <input
                 type="tel"
                 placeholder="Phone Number"
-                className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500"
+                className="w-full border rounded-lg px-4 py-2"
                 value={userData.phone}
                 onChange={(e) =>
                   setUserData({ ...userData, phone: e.target.value })
@@ -212,7 +197,7 @@ export default function CartPage() {
 
               <textarea
                 placeholder="Full Address"
-                className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500"
+                className="w-full border rounded-lg px-4 py-2"
                 value={userData.address}
                 onChange={(e) =>
                   setUserData({ ...userData, address: e.target.value })
@@ -223,7 +208,7 @@ export default function CartPage() {
                 <input
                   type="text"
                   placeholder="City"
-                  className="w-1/2 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500"
+                  className="w-1/2 border rounded-lg px-4 py-2"
                   value={userData.city}
                   onChange={(e) =>
                     setUserData({ ...userData, city: e.target.value })
@@ -233,7 +218,7 @@ export default function CartPage() {
                 <input
                   type="text"
                   placeholder="Pincode"
-                  className="w-1/2 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500"
+                  className="w-1/2 border rounded-lg px-4 py-2"
                   value={userData.pincode}
                   onChange={(e) =>
                     setUserData({ ...userData, pincode: e.target.value })
@@ -242,9 +227,8 @@ export default function CartPage() {
               </div>
             </div>
 
-            {/* Total Only */}
             <div className="border-t pt-4">
-              <p className="text-xl font-semibold text-gray-900 flex justify-between">
+              <p className="text-xl font-semibold flex justify-between">
                 <span>Total:</span>
                 <span>₹{totalAmount}</span>
               </p>
@@ -252,7 +236,7 @@ export default function CartPage() {
 
             <button
               onClick={handleCheckout}
-              className="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 rounded-lg mt-4 transition"
+              className="w-full bg-rose-600 text-white font-semibold py-3 rounded-lg"
             >
               Proceed to Checkout
             </button>

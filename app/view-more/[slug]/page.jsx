@@ -1,58 +1,59 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useShop } from "@/app/context/ShopContext";
 import ProductCard2 from "@/components/ProductCard2";
+import { slugify } from "@/lib/utils";
 
 export default function ViewMorePage() {
   const { slug } = useParams();
-  const { products, featuredProducts, categories, loading } = useShop();
+  const { products, categories, featuredProducts, loading } = useShop();
+
   const [filteredProducts, setFilteredProducts] = useState([]);
 
-  // 🧠 Create a map of category name to _id for convenience
-  const categoryMap = useMemo(() => {
-    const map = {};
-    categories.forEach((cat) => {
-      map[cat.name?.toLowerCase()] = cat._id;
-    });
-    return map;
-  }, [categories]);
-
   useEffect(() => {
-    if (!slug || loading) return;
+    if (loading || !slug) return;
 
+    const cleanedSlug = slugify(slug);
     let data = [];
 
-    switch (slug) {
-      case "current-hits":
-        // ✅ Products marked as "Our Current Hits"
-        data = featuredProducts;
-        break;
-
-      case "ready-to-cook":
-        // ✅ Products tagged as ready-to-cook
-        data = products.filter((p) =>
-          p.tags?.map((t) => t.toLowerCase()).includes("ready-to-cook")
-        );
-        break;
-
-      default:
-        // ✅ Check if slug matches a category name (like "fish", "chicken", etc.)
-        const categoryId = categoryMap[slug?.toLowerCase()];
-        if (categoryId) {
-          data = products.filter((p) => p.category?._id === categoryId);
-        } else {
-          // fallback: show all products
-          data = products;
-        }
-        break;
+    // ⭐ 1) OUR CURRENT HITS — FIXED
+    if (
+      cleanedSlug === "our-current-hits" ||
+      cleanedSlug === "current-hits"
+    ) {
+      data = featuredProducts;
+      setFilteredProducts(data);
+      return; // stop here
     }
 
-    setFilteredProducts(data);
-  }, [slug, products, featuredProducts, categories, categoryMap, loading]);
+    // ⭐ 2) READY TO COOK
+    if (cleanedSlug === "ready-to-cook") {
+      data = products.filter((p) =>
+        p.tags?.map((t) => t.toLowerCase()).includes("ready-to-cook")
+      );
+      setFilteredProducts(data);
+      return;
+    }
 
-  // 🧭 If loading, show placeholder
+    // ⭐ 3) CATEGORY MATCH (for chicken, fish, etc.)
+    const matchedCategory = categories.find(
+      (cat) => slugify(cat.name) === cleanedSlug
+    );
+
+    if (matchedCategory) {
+      data = products.filter((p) => p.category?._id === matchedCategory._id);
+      setFilteredProducts(data);
+      return;
+    }
+
+    // ❌ No match
+    setFilteredProducts([]);
+  }, [slug, products, categories, featuredProducts, loading]);
+
+  // ===============================
+
   if (loading) {
     return (
       <section className="container max-w-6xl mx-auto py-12 text-center">

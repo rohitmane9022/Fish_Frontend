@@ -3,51 +3,44 @@ import { connectDB } from "@/lib/db";
 import Product from "@/app/model/Product";
 import cloudinary from "@/lib/cloudinary";
 
+// GET all products
 export async function GET(req) {
   await connectDB();
 
-  try {
-    const { searchParams } = new URL(req.url);
-    const filter = {};
+  const { searchParams } = new URL(req.url);
+  const filter = {};
 
-    if (searchParams.get("category"))
-      filter.category = searchParams.get("category");
+  if (searchParams.get("category")) filter.category = searchParams.get("category");
+  if (searchParams.get("subcategory")) filter.subcategory = searchParams.get("subcategory");
 
-    if (searchParams.get("subcategory"))
-      filter.subcategory = searchParams.get("subcategory");
-
-    const products = await Product.find(filter);
-    return NextResponse.json(products);
-  } catch (err) {
-    console.error("❌ GET /api/products error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch products" },
-      { status: 500 }
-    );
-  }
+  const products = await Product.find(filter).populate("category");
+  return NextResponse.json(products);
 }
 
-
+// POST product
 export async function POST(req) {
   await connectDB();
   const formData = await req.formData();
 
   const data = {};
   for (const [key, value] of formData.entries()) {
-    data[key] = value;
+    if (key !== "image") data[key] = value;
   }
 
+  // Convert JSON fields
   if (data.tags) data.tags = JSON.parse(data.tags);
   if (data.highlights) data.highlights = JSON.parse(data.highlights);
   if (data.nutrition) data.nutrition = JSON.parse(data.nutrition);
 
-  data.price = Number(data.price);
-  data.originalPrice = Number(data.originalPrice);
-  data.isHit = data.isHit === "true";
+  // Convert numbers
+  if (data.price) data.price = Number(data.price);
+  if (data.originalPrice) data.originalPrice = Number(data.originalPrice);
+  if (data.serves) data.serves = Number(data.serves);
+  if (data.isHit) data.isHit = data.isHit === "true";
 
-  // 🔥 CLOUDINARY UPLOAD
-  let imageUrl = null;
+  // ⭐ CLOUDINARY UPLOAD
   const imageFile = formData.get("image");
+  let imageUrl = null;
 
   if (imageFile && imageFile.name) {
     const bytes = await imageFile.arrayBuffer();
@@ -55,9 +48,7 @@ export async function POST(req) {
 
     const uploaded = await cloudinary.uploader.upload(
       `data:${imageFile.type};base64,${buffer.toString("base64")}`,
-      {
-        folder: "products",
-      }
+      { folder: "products" }
     );
 
     imageUrl = uploaded.secure_url;
@@ -65,11 +56,13 @@ export async function POST(req) {
 
   data.imageUrl = imageUrl;
 
+  // Create product
   const product = await Product.create(data);
 
   return NextResponse.json({
     success: true,
-    message: "Product created successfully",
+    message: "Product created!",
     data: product,
   });
 }
+

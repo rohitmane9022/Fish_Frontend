@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useShop } from "@/app/context/ShopContext";
 import Categories from "./Categories";
 import WhyChooseUs from "./WhyChooseUs";
+import { slugify } from "@/lib/utils";
 
 const Home1 = () => {
   const router = useRouter();
@@ -31,103 +32,40 @@ const Home1 = () => {
     );
   }
 
-  // 🔥 Helper: Get category name using ID
-  const getCategoryName = (id) => {
-    return categories.find((c) => c._id === id)?.name || "";
+  // Return category name directly
+  const getCategoryName = (product) => {
+    return product?.category?.name?.toLowerCase() || "";
   };
 
-  // 🔥 Fish products
+  // Filter Products
+  const currentHits = products.filter((p) => p.isHit);
+
   const fishProducts = products.filter((p) =>
-    getCategoryName(p.category).toLowerCase().includes("fish")
+    getCategoryName(p).includes("fish")
   );
 
-  // 🔥 Chicken products
   const chickenProducts = products.filter((p) =>
-    getCategoryName(p.category).toLowerCase().includes("chicken")
+    getCategoryName(p).includes("chicken")
   );
 
-  // 🔥 Ready to cook products
   const readyToCookProducts = products.filter((p) =>
     p.tags?.includes("ready-to-cook")
   );
 
-  // 🔥 Hit products
-  const currentHits = products.filter((p) => p.isHit === true);
+  // Get categories for View More slug
+  const fishCategory = categories.find((c) =>
+    c.name.toLowerCase().includes("fish")
+  );
+
+  const chickenCategory = categories.find((c) =>
+    c.name.toLowerCase().includes("chicken")
+  );
 
   return (
     <div>
       <div className="container max-w-6xl mx-auto px-6 py-10">
-        {/* ================= CURRENT HITS ================= */}
-        <section className="mb-5">
-          <h2 className="text-[22px] font-bold">Our Current Hits</h2>
-          <p className="text-base text-gray-600 mb-4">
-            Here's what everyone's eating!
-          </p>
 
-          <div className="flex overflow-x-auto scrollbar-hide gap-8">
-            {currentHits.slice(0, 5).map((product) => (
-              <div key={product._id} className="cursor-pointer">
-                <ProductCart
-                  id={product._id}
-                  imageUrl={product.imageUrl}
-                  name={product.name}
-                  weight={product.weight}
-                  pieces={product.pieces}
-                  serves={product.serves}
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                  discount={product.discount}
-                  onClick={() => handleProductClick(product._id)}
-                />
-              </div>
-            ))}
-
-            <div
-              onClick={() => router.push("/view-more/our-current-hits")}
-              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48] font-semibold cursor-pointer"
-            >
-              View More
-            </div>
-          </div>
-        </section>
-
-        {/* ================= FISH SECTION ================= */}
-        <section className="mb-5">
-          <h2 className="text-[21px] font-bold">
-            Fish, Exclusive Fish and Seafood
-          </h2>
-          <p className="text-base text-gray-600 mb-4">Caught on the same day</p>
-
-          <div className="flex overflow-x-auto scrollbar-hide gap-8">
-            {fishProducts.slice(0, 5).map((product) => (
-              <div key={product._id} className="cursor-pointer">
-                <ProductCart
-                  id={product._id}
-                  imageUrl={product.imageUrl}
-                  name={product.name}
-                  weight={product.weight}
-                  pieces={product.pieces}
-                  serves={product.serves}
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                  discount={product.discount}
-                  onClick={() => handleProductClick(product._id)}
-                />
-              </div>
-            ))}
-
-            <div
-              onClick={() =>
-                router.push("/view-more/Fresh-exclusive-Fish-and-Seafood")
-              }
-              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48] font-semibold cursor-pointer"
-            >
-              View More
-            </div>
-          </div>
-        </section>
-
-        {/* ================= CATEGORY LIST ================= */}
+       
         <section className="mb-5">
           <h2 className="text-[22px] font-bold">Shop by Categories</h2>
           <p className="text-base text-gray-600 mb-4">
@@ -147,6 +85,80 @@ const Home1 = () => {
           </div>
         </section>
 
+        {/* ================= CURRENT HITS ================= */}
+        <section className="mb-5">
+          <h2 className="text-[22px] font-bold">Our Current Hits</h2>
+          <p className="text-base text-gray-600 mb-4">
+            Here's what everyone's eating!
+          </p>
+
+          <div className="flex overflow-x-auto scrollbar-hide gap-8">
+            {currentHits.slice(0, 5).map((product) => (
+              <div key={product._id} className="cursor-pointer">
+                <ProductCart
+                  id={product._id}
+                  imageUrl={product.imageUrl}
+                  name={product.name}
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                  discount={product.discount}
+                  weight={product.weight}
+                  pieces={product.pieces}
+                  serves={product.serves}
+                  onClick={() => handleProductClick(product._id)}
+                />
+              </div>
+            ))}
+
+            <div
+              onClick={() =>
+                router.push(`/view-more/${slugify("Our Current Hits")}`)
+              }
+              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48] font-semibold cursor-pointer"
+            >
+              View More
+            </div>
+          </div>
+        </section>
+
+        {/* ================= FISH SECTION ================= */}
+        <section className="mb-5">
+          <h2 className="text-[21px] font-bold">
+            Fish, Exclusive Fish and Seafood
+          </h2>
+          <p className="text-base text-gray-600 mb-4">
+            Caught on the same day
+          </p>
+
+          <div className="flex overflow-x-auto scrollbar-hide gap-8">
+            {fishProducts.slice(0, 5).map((product) => (
+              <div key={product._id} className="cursor-pointer">
+                <ProductCart
+                  id={product._id}
+                  imageUrl={product.imageUrl}
+                  name={product.name}
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                  discount={product.discount}
+                  weight={product.weight}
+                  pieces={product.pieces}
+                  serves={product.serves}
+                  onClick={() => handleProductClick(product._id)}
+                />
+              </div>
+            ))}
+
+            <div
+              onClick={() =>
+                router.push(`/view-more/${slugify(fishCategory?.name)}`)
+              }
+              className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48] font-semibold cursor-pointer"
+            >
+              View More
+            </div>
+          </div>
+        </section>
+
         {/* ================= CHICKEN SECTION ================= */}
         <section className="mb-5">
           <h2 className="text-[21px] font-bold">Best of Chicken</h2>
@@ -161,19 +173,21 @@ const Home1 = () => {
                   id={product._id}
                   imageUrl={product.imageUrl}
                   name={product.name}
-                  weight={product.weight}
-                  pieces={product.pieces}
-                  serves={product.serves}
                   price={product.price}
                   originalPrice={product.originalPrice}
                   discount={product.discount}
+                  weight={product.weight}
+                  pieces={product.pieces}
+                  serves={product.serves}
                   onClick={() => handleProductClick(product._id)}
                 />
               </div>
             ))}
 
             <div
-              onClick={() => router.push("/view-more/chicken")}
+              onClick={() =>
+                router.push(`/view-more/${slugify(chickenCategory?.name)}`)
+              }
               className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48] font-semibold cursor-pointer"
             >
               View More
@@ -195,19 +209,21 @@ const Home1 = () => {
                   id={product._id}
                   imageUrl={product.imageUrl}
                   name={product.name}
-                  weight={product.weight}
-                  pieces={product.pieces}
-                  serves={product.serves}
                   price={product.price}
                   originalPrice={product.originalPrice}
                   discount={product.discount}
+                  weight={product.weight}
+                  pieces={product.pieces}
+                  serves={product.serves}
                   onClick={() => handleProductClick(product._id)}
                 />
               </div>
             ))}
 
             <div
-              onClick={() => router.push("/view-more/ready-to-cook")}
+              onClick={() =>
+                router.push(`/view-more/${slugify("ready to cook")}`)
+              }
               className="min-w-[220px] flex items-center justify-center rounded-2xl bg-[#fdf9f7] border text-[#e11d48] font-semibold cursor-pointer"
             >
               View More

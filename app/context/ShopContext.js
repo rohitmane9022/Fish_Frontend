@@ -1,4 +1,5 @@
 "use client";
+
 import { createContext, useContext, useEffect, useState } from "react";
 
 const ShopContext = createContext();
@@ -10,6 +11,15 @@ export const ShopProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [userData, setUserData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+    city: "",
+    pincode: "",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,9 +38,9 @@ export const ShopProvider = ({ children }) => {
 
         setCategories(catData);
         setProducts(prodData);
-        setFeaturedProducts(prodData.filter((p) => p.isHit === true));
+        setFeaturedProducts(prodData.filter((p) => p.isHit));
       } catch (err) {
-        console.error("❌ Failed to fetch data:", err);
+        console.error("Fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -39,15 +49,16 @@ export const ShopProvider = ({ children }) => {
     fetchData();
   }, []);
 
- 
   useEffect(() => {
     const storedCart = localStorage.getItem("cartItems");
     const storedWishlist = localStorage.getItem("wishlist");
+    const storedUser = localStorage.getItem("userCheckoutData");
+
     if (storedCart) setCartItems(JSON.parse(storedCart));
     if (storedWishlist) setWishlist(JSON.parse(storedWishlist));
+    if (storedUser) setUserData(JSON.parse(storedUser));
   }, []);
 
-  // 💾 Save to localStorage
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
@@ -56,49 +67,49 @@ export const ShopProvider = ({ children }) => {
     localStorage.setItem("wishlist", JSON.stringify(wishlist));
   }, [wishlist]);
 
-  // 🛒 CART FUNCTIONS
+  useEffect(() => {
+    localStorage.setItem("userCheckoutData", JSON.stringify(userData));
+  }, [userData]);
+
+  // CART FUNCTIONS
   const addToCart = (product) => {
     setCartItems((prev) => {
-      const exists = prev.find((item) => item._id === product._id);
+      const exists = prev.find((i) => i._id === product._id);
+
       if (exists) {
-        return prev.map((item) =>
-          item._id === product._id ? { ...item, qty: item.qty + 1 } : item
+        return prev.map((i) =>
+          i._id === product._id ? { ...i, qty: i.qty + 1 } : i
         );
       }
+
       return [...prev, { ...product, qty: 1 }];
     });
   };
 
-  const updateCartItemQuantity = (id, newQty) => {
+  const updateCartItemQuantity = (id, qty) => {
     setCartItems((prev) => {
-      if (newQty <= 0) return prev.filter((item) => item._id !== id);
-      return prev.map((item) =>
-        item._id === id ? { ...item, qty: newQty } : item
+      if (qty <= 0) return prev.filter((i) => i._id !== id);
+
+      return prev.map((i) =>
+        i._id === id ? { ...i, qty } : i
       );
     });
   };
 
   const removeFromCart = (id) =>
-    setCartItems((prev) => prev.filter((item) => item._id !== id));
+    setCartItems((prev) => prev.filter((i) => i._id !== id));
 
   const clearCart = () => setCartItems([]);
 
-  // 💖 WISHLIST FUNCTIONS
   const toggleWishlist = (product) => {
     setWishlist((prev) => {
-      const exists = prev.find((item) => item._id === product._id);
-      if (exists) {
-        return prev.filter((item) => item._id !== product._id);
-      } else {
-        return [...prev, product];
-      }
+      const exists = prev.find((i) => i._id === product._id);
+      if (exists) return prev.filter((i) => i._id !== product._id);
+      return [...prev, product];
     });
   };
 
-  const removeFromWishlist = (id) =>
-    setWishlist((prev) => prev.filter((item) => item._id !== id));
-
-  const isInWishlist = (id) => wishlist.some((item) => item._id === id);
+  const isInWishlist = (id) => wishlist.some((i) => i._id === id);
 
   return (
     <ShopContext.Provider
@@ -109,14 +120,19 @@ export const ShopProvider = ({ children }) => {
         featuredProducts,
         cartItems,
         wishlist,
+
         addToCart,
         updateCartItemQuantity,
         removeFromCart,
         clearCart,
+
         toggleWishlist,
-        removeFromWishlist,
         isInWishlist,
+
         getProductById: (id) => products.find((p) => p._id === id),
+
+        userData,
+        setUserData,
       }}
     >
       {children}

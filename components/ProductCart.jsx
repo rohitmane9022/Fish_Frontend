@@ -26,7 +26,7 @@ export default function ProductCart({
     setQuantity(item ? item.qty : 0);
   }, [cartItems, id]);
 
-  // ✅ Add to cart
+  // ✅ Add item to cart
   const handleAddToCart = (e) => {
     e.stopPropagation();
     const product = {
@@ -57,6 +57,7 @@ export default function ProductCart({
   return (
     <div className="w-55 relative rounded-2xl">
       <div className="relative h-40 bg-gray-100 rounded-2xl">
+        {/* 🖼 Product Image */}
         <Image
           src={imageUrl}
           alt={name}
@@ -66,16 +67,22 @@ export default function ProductCart({
           onClick={onClick}
         />
 
-        {/* Cart Button */}
+        {/* 🛒 Cart Button */}
         {quantity === 0 ? (
           <button
-            onClick={handleAddToCart}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToCart(e);
+            }}
             className="absolute -bottom-2 -right-4 z-20 bg-white border-2 rounded-lg py-1.5 px-2.5 shadow-lg"
           >
             <Plus size={20} className="text-red-500 font-bold" />
           </button>
         ) : (
-          <div className="absolute -bottom-2 -right-4 z-20 flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 border-2 shadow">
+          <div
+            className="absolute -bottom-2 -right-4 z-20 flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 border-2 shadow"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={handleDecrement}
               className="text-red-500 hover:text-red-600"
@@ -93,13 +100,18 @@ export default function ProductCart({
         )}
       </div>
 
+      {/* 📄 Product Info */}
       <div className="space-y-2 p-2" onClick={onClick}>
         <h3 className="font-semibold text-base leading-6">{name}</h3>
 
         <div className="flex items-center gap-1.5">
-          {weight && <p className="font-semibold text-sm">{weight}g</p>}
-          {pieces && <span className="text-xs text-gray-600">| {pieces} Pieces</span>}
-          {serves && <span className="text-xs text-gray-600">| Serves {serves}</span>}
+          {weight && <p className="font-semibold text-sm">{weight}</p>}
+          {pieces && (
+            <span className="text-xs text-gray-600">| {pieces} Pieces</span>
+          )}
+          {serves && (
+            <span className="text-xs text-gray-600">| Serves {serves}</span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

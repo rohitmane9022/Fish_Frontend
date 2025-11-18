@@ -11,17 +11,23 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
   subcategory: { type: String, required: true },
+
   tags: [String],
-  weight: String,
-  pieces: String,
-  serves: String,
+
+  // ⭐ FIX (you were missing these fields)
+  weight: { type: String, default: "" },
+  pieces: { type: String, default: "" },
+  serves: { type: Number, default: 1 },
+
   price: { type: Number, required: true },
   originalPrice: Number,
   discount: String,
   description: String,
   highlights: [String],
   imageUrl: String,
+
   nutrition: nutritionSchema,
+
   isHit: { type: Boolean, default: false },
 });
 

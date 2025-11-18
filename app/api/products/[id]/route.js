@@ -3,10 +3,11 @@ import { connectDB } from "@/lib/db";
 import Product from "@/app/model/Product";
 import cloudinary from "@/lib/cloudinary";
 
-// UPDATE PRODUCT
+// ⭐⭐⭐ PUT — Update Product
 export async function PUT(req, context) {
   await connectDB();
-  const { id } = await context.params;   // 👈 IMPORTANT FIX
+
+  const { id } = await context.params;
 
   try {
     const formData = await req.formData();
@@ -22,6 +23,7 @@ export async function PUT(req, context) {
       } else if (key === "isHit") {
         updateData[key] = value === "true";
       } else {
+        // ⭐ THIS FIXES weight, pieces, ALL OTHER FIELDS
         updateData[key] = value;
       }
     }
@@ -55,8 +57,8 @@ export async function PUT(req, context) {
       message: "Product updated!",
       data: updatedProduct,
     });
-  } catch (error) {
-    console.error("UPDATE ERROR:", error);
+  } catch (err) {
+    console.error("UPDATE ERROR:", err);
     return NextResponse.json(
       { error: "Error updating product" },
       { status: 500 }
@@ -64,10 +66,12 @@ export async function PUT(req, context) {
   }
 }
 
-// DELETE PRODUCT
+
+// ⭐⭐⭐ DELETE — Remove Product
 export async function DELETE(req, context) {
   await connectDB();
-  const { id } = await context.params;  // 👈 FIXED
+
+  const { id } = await context.params; // FIXED
 
   try {
     const product = await Product.findById(id);
@@ -84,12 +88,12 @@ export async function DELETE(req, context) {
 
     return NextResponse.json({
       success: true,
-      message: "Product deleted successfully",
+      message: "Product deleted successfully!",
     });
   } catch (err) {
     console.error("DELETE ERROR:", err);
     return NextResponse.json(
-      { error: "Error deleting product" },
+      { error: "Failed to delete product" },
       { status: 500 }
     );
   }
