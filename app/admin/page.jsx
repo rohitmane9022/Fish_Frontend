@@ -1,15 +1,18 @@
 "use client";
+
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export default function ProductManagement() {
-  
   const [allowed, setAllowed] = useState(false);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [loading, setLoading] = useState(false); // 🔥 Loading state added
+
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -33,14 +36,13 @@ export default function ProductManagement() {
     },
   });
 
+  // Fetch products
   const fetchProducts = () => {
     fetch("/api/products")
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error("Error fetching products:", err));
   };
-
-  
 
   useEffect(() => {
     const logged = localStorage.getItem("adminLoggedIn");
@@ -49,7 +51,6 @@ export default function ProductManagement() {
     } else {
       window.location.href = "/admin/login";
     }
-    
   }, []);
 
   useEffect(() => {
@@ -59,13 +60,11 @@ export default function ProductManagement() {
       .catch((err) => console.error("Error fetching categories:", err));
   }, []);
 
- 
   useEffect(() => {
     fetchProducts();
   }, []);
 
   if (!allowed) return null;
-
 
   const selectedCategory = categories.find(
     (cat) => cat.name === formData.category
@@ -160,9 +159,10 @@ export default function ProductManagement() {
     setShowForm(false);
   };
 
+  // ⭐⭐⭐ Updated Submit Function ⭐⭐⭐
   const handleSubmit = async () => {
     if (!formData.category) {
-      alert("Please select a category");
+      toast.error("Please select a category");
       return;
     }
 
@@ -174,13 +174,13 @@ export default function ProductManagement() {
       selectedCategoryObj?.subcategories?.length > 0 &&
       !formData.subcategory
     ) {
-      alert("Please select a subcategory");
+      toast.error("Please select a subcategory");
       return;
     }
 
     const data = new FormData();
-
     const categoryObj = categories.find((cat) => cat.name === formData.category);
+
     if (categoryObj) data.append("category", categoryObj._id);
 
     data.append("name", formData.name);
@@ -188,8 +188,7 @@ export default function ProductManagement() {
     data.append("isHit", formData.isHit);
 
     if (formData.subcategory) data.append("subcategory", formData.subcategory);
-    if (formData.originalPrice)
-      data.append("originalPrice", formData.originalPrice);
+    if (formData.originalPrice) data.append("originalPrice", formData.originalPrice);
     if (formData.discount) data.append("discount", formData.discount);
     if (formData.description) data.append("description", formData.description);
     if (formData.weight) data.append("weight", formData.weight);
@@ -213,6 +212,8 @@ export default function ProductManagement() {
     if (formData.image) data.append("image", formData.image);
 
     try {
+      setLoading(true);
+
       const url = editingProduct
         ? `/api/products/${editingProduct._id}`
         : `/api/products`;
@@ -223,34 +224,40 @@ export default function ProductManagement() {
       });
 
       if (res.ok) {
-        alert(editingProduct ? "Product updated!" : "Product added!");
+        toast.success(editingProduct ? "Product updated!" : "Product added!");
         resetForm();
         fetchProducts();
       } else {
-        alert("Failed to save product");
+        toast.error("Failed to save product");
       }
     } catch (err) {
-      console.error("Submit error:", err);
+      toast.error("Something went wrong!");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // ⭐⭐⭐ Updated Delete (with toast) ⭐⭐⭐
   const handleDelete = async (id) => {
     if (!confirm("Are you sure?")) return;
+
     try {
       const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+
       if (res.ok) {
-        alert("Product deleted!");
+        toast.success("Product deleted!");
         fetchProducts();
-      } else alert("Failed to delete");
+      } else {
+        toast.error("Failed to delete");
+      }
     } catch (err) {
-      console.error("Delete error:", err);
+      toast.error("Something went wrong!");
     }
   };
 
-  
   return (
     <div className="max-w-7xl mx-auto my-10 px-4">
-
+      {/* Logout */}
       <div className="flex justify-end mb-5">
         <button
           onClick={() => {
@@ -263,7 +270,7 @@ export default function ProductManagement() {
         </button>
       </div>
 
-     
+      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Product Management</h1>
         <button
@@ -277,10 +284,11 @@ export default function ProductManagement() {
         </button>
       </div>
 
-      
+      {/* FORM MODAL */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
               <h2 className="text-2xl font-semibold">
                 {editingProduct ? "Update Product" : "Add New Product"}
@@ -293,8 +301,10 @@ export default function ProductManagement() {
               </button>
             </div>
 
+            {/* FORM */}
             <div className="p-6 space-y-4">
-              
+
+              {/* Name */}
               <input
                 type="text"
                 name="name"
@@ -304,7 +314,7 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full"
               />
 
-            
+              {/* Description */}
               <textarea
                 name="description"
                 value={formData.description}
@@ -313,7 +323,7 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full min-h-20"
               />
 
-              {/* Category */}
+              {/* Category + Subcategory */}
               <div className="grid grid-cols-2 gap-4">
                 <select
                   name="category"
@@ -352,7 +362,7 @@ export default function ProductManagement() {
                 )}
               </div>
 
-              {/* Pricing */}
+              {/* Price */}
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="number"
@@ -458,54 +468,60 @@ export default function ProductManagement() {
                 </div>
               </div>
 
-              {/* Image */}
+              {/* Image Selector */}
               <div className="space-y-2">
-  <label className="font-medium text-sm text-gray-700">Product Image</label>
+                <label className="font-medium text-sm text-gray-700">
+                  Product Image
+                </label>
 
-  {/* Upload Box */}
-  <div className="flex items-center gap-4">
-    <label
-      htmlFor="product-image"
-      className="cursor-pointer bg-gray-100 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition text-sm"
-    >
-      Choose Image
-    </label>
+                <div className="flex items-center gap-4">
+                  <label
+                    htmlFor="product-image"
+                    className="cursor-pointer bg-gray-100 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition text-sm"
+                  >
+                    Choose Image
+                  </label>
 
-    <input
-      id="product-image"
-      type="file"
-      accept="image/*"
-      onChange={handleImageChange}
-      className="hidden"
-    />
+                  <input
+                    id="product-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
 
-    <span className="text-xs text-gray-500">
-      JPG, PNG or JPEG (max 5MB)
-    </span>
-  </div>
+                  <span className="text-xs text-gray-500">
+                    JPG, PNG or JPEG (max 5MB)
+                  </span>
+                </div>
 
-  {/* Preview */}
-  {imagePreview && (
-    <div className="mt-3">
-      <Image
-        src={imagePreview}
-        width={130}
-        height={130}
-        alt="Product Preview"
-        className="w-32 h-32 object-cover border rounded-xl shadow-sm"
-      />
-    </div>
-  )}
-</div>
-
+                {imagePreview && (
+                  <div className="mt-3">
+                    <Image
+                      src={imagePreview}
+                      width={130}
+                      height={130}
+                      alt="Product Preview"
+                      className="w-32 h-32 object-cover border rounded-xl shadow-sm"
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Buttons */}
               <div className="flex gap-4 mt-4">
                 <button
                   onClick={handleSubmit}
-                  className="flex-1 bg-black text-white py-2 rounded-lg hover:bg-gray-800"
+                  disabled={loading}
+                  className="flex-1 bg-black text-white py-2 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {editingProduct ? "Update" : "Add"}
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : editingProduct ? (
+                    "Update"
+                  ) : (
+                    "Add"
+                  )}
                 </button>
 
                 <button
@@ -520,7 +536,7 @@ export default function ProductManagement() {
         </div>
       )}
 
-      {/* ---------------- PRODUCT LIST ---------------- */}
+      {/* PRODUCT LIST */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
           <div
