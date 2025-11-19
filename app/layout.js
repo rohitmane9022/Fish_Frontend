@@ -3,9 +3,10 @@ import { Suspense } from "react";
 import Header from "@/components/Header";
 import { ShopProvider } from "@/app/context/ShopContext";
 import { SiteFooter } from "@/components/SiteFooter";
-import MobileNav from "@/components/MobileNav";      // ⬅ ADD THIS
-import CartPopup from "@/components/CartPopup";      // ⬅ ADD THIS
+import MobileNav from "@/components/MobileNav";   
+import CartPopup from "@/components/CartPopup";   
 import { Toaster } from "react-hot-toast";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata = {
   title: "Bombay Fresh Fish",
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
             <main className="flex-1 "> 
               {/* ⬅ pb-28 ensures content doesn't hide behind mobile nav */}
               {children}
+              <SpeedInsights />
             </main>
 
             {/* Footer */}
