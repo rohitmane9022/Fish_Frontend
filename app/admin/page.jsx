@@ -11,7 +11,7 @@ export default function ProductManagement() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [loading, setLoading] = useState(false); // 🔥 Loading state added
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -46,11 +46,8 @@ export default function ProductManagement() {
 
   useEffect(() => {
     const logged = localStorage.getItem("adminLoggedIn");
-    if (logged === "true") {
-      setAllowed(true);
-    } else {
-      window.location.href = "/admin/login";
-    }
+    if (logged === "true") setAllowed(true);
+    else window.location.href = "/admin/login";
   }, []);
 
   useEffect(() => {
@@ -69,10 +66,20 @@ export default function ProductManagement() {
   const selectedCategory = categories.find(
     (cat) => cat.name === formData.category
   );
+
   const subcategories = selectedCategory?.subcategories || [];
+
+  const handleCategoryChange = (e) => {
+    setFormData({
+      ...formData,
+      category: e.target.value,
+      subcategory: "", // reset subcategory on category change
+    });
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
     if (name.startsWith("nutrition.")) {
       const key = name.split(".")[1];
       setFormData({
@@ -126,9 +133,7 @@ export default function ProductManagement() {
       },
     });
 
-    if (product.imageUrl) {
-      setImagePreview(product.imageUrl);
-    }
+    if (product.imageUrl) setImagePreview(product.imageUrl);
   };
 
   const resetForm = () => {
@@ -147,19 +152,14 @@ export default function ProductManagement() {
       highlights: "",
       image: null,
       isHit: false,
-      nutrition: {
-        energy: "",
-        carbohydrate: "",
-        fat: "",
-        protein: "",
-      },
+      nutrition: { energy: "", carbohydrate: "", fat: "", protein: "" },
     });
+    setShowForm(false);
     setImagePreview(null);
     setEditingProduct(null);
-    setShowForm(false);
   };
 
-  // ⭐⭐⭐ Updated Submit Function ⭐⭐⭐
+  // Submit Product
   const handleSubmit = async () => {
     if (!formData.category) {
       toast.error("Please select a category");
@@ -170,6 +170,7 @@ export default function ProductManagement() {
       (cat) => cat.name === formData.category
     );
 
+    // Check if category has subcategories
     if (
       selectedCategoryObj?.subcategories?.length > 0 &&
       !formData.subcategory
@@ -187,7 +188,9 @@ export default function ProductManagement() {
     data.append("price", formData.price);
     data.append("isHit", formData.isHit);
 
-    if (formData.subcategory) data.append("subcategory", formData.subcategory);
+    
+    data.append("subcategory", formData.subcategory || "");
+
     if (formData.originalPrice) data.append("originalPrice", formData.originalPrice);
     if (formData.discount) data.append("discount", formData.discount);
     if (formData.description) data.append("description", formData.description);
@@ -196,16 +199,10 @@ export default function ProductManagement() {
     if (formData.serves) data.append("serves", formData.serves);
 
     if (formData.tags)
-      data.append(
-        "tags",
-        JSON.stringify(formData.tags.split(",").map((t) => t.trim()))
-      );
+      data.append("tags", JSON.stringify(formData.tags.split(",").map((t) => t.trim())));
 
     if (formData.highlights)
-      data.append(
-        "highlights",
-        JSON.stringify(formData.highlights.split(",").map((h) => h.trim()))
-      );
+      data.append("highlights", JSON.stringify(formData.highlights.split(",").map((h) => h.trim())));
 
     data.append("nutrition", JSON.stringify(formData.nutrition));
 
@@ -237,7 +234,6 @@ export default function ProductManagement() {
     }
   };
 
-  // ⭐⭐⭐ Updated Delete (with toast) ⭐⭐⭐
   const handleDelete = async (id) => {
     if (!confirm("Are you sure?")) return;
 
@@ -257,6 +253,7 @@ export default function ProductManagement() {
 
   return (
     <div className="max-w-7xl mx-auto my-10 px-4">
+
       {/* Logout */}
       <div className="flex justify-end mb-5">
         <button
@@ -288,7 +285,8 @@ export default function ProductManagement() {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
-            {/* Header */}
+
+            {/* Modal Header */}
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
               <h2 className="text-2xl font-semibold">
                 {editingProduct ? "Update Product" : "Add New Product"}
@@ -301,10 +299,9 @@ export default function ProductManagement() {
               </button>
             </div>
 
-            {/* FORM */}
+            {/* FORM CONTENT */}
             <div className="p-6 space-y-4">
 
-              {/* Name */}
               <input
                 type="text"
                 name="name"
@@ -314,7 +311,6 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full"
               />
 
-              {/* Description */}
               <textarea
                 name="description"
                 value={formData.description}
@@ -325,10 +321,12 @@ export default function ProductManagement() {
 
               {/* Category + Subcategory */}
               <div className="grid grid-cols-2 gap-4">
+
+                {/* Category */}
                 <select
                   name="category"
                   value={formData.category}
-                  onChange={handleChange}
+                  onChange={handleCategoryChange}
                   className="border rounded-lg p-2 w-full"
                 >
                   <option value="">Select Category</option>
@@ -339,7 +337,8 @@ export default function ProductManagement() {
                   ))}
                 </select>
 
-                {selectedCategory?.subcategories?.length > 0 ? (
+                {/* Subcategory */}
+                {subcategories.length > 0 ? (
                   <select
                     name="subcategory"
                     value={formData.subcategory}
@@ -354,15 +353,20 @@ export default function ProductManagement() {
                     ))}
                   </select>
                 ) : (
-                  <input
-                    readOnly
-                    className="border p-2 rounded-lg w-full bg-gray-100"
-                    placeholder="No subcategory"
-                  />
+                  <>
+                    <input
+                      readOnly
+                      className="border p-2 rounded-lg w-full bg-gray-100"
+                      placeholder="No subcategory"
+                    />
+
+                    {/* ⭐ HIDDEN SUBCATEGORY FIX */}
+                    <input type="hidden" name="subcategory" value="" />
+                  </>
                 )}
               </div>
 
-              {/* Price */}
+              {/* Price Fields */}
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="number"
@@ -420,7 +424,6 @@ export default function ProductManagement() {
                 />
               </div>
 
-              {/* Tags */}
               <input
                 type="text"
                 name="tags"
@@ -430,7 +433,6 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full"
               />
 
-              {/* Highlights */}
               <input
                 type="text"
                 name="highlights"
@@ -468,20 +470,16 @@ export default function ProductManagement() {
                 </div>
               </div>
 
-              {/* Image Selector */}
-              <div className="space-y-2">
-                <label className="font-medium text-sm text-gray-700">
-                  Product Image
-                </label>
-
+              {/* Image */}
+              <div>
+                <label className="text-sm">Product Image</label>
                 <div className="flex items-center gap-4">
                   <label
                     htmlFor="product-image"
-                    className="cursor-pointer bg-gray-100 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition text-sm"
+                    className="cursor-pointer bg-gray-100 border px-4 py-2 rounded-lg hover:bg-gray-200"
                   >
                     Choose Image
                   </label>
-
                   <input
                     id="product-image"
                     type="file"
@@ -489,20 +487,16 @@ export default function ProductManagement() {
                     onChange={handleImageChange}
                     className="hidden"
                   />
-
-                  <span className="text-xs text-gray-500">
-                    JPG, PNG or JPEG (max 5MB)
-                  </span>
                 </div>
 
                 {imagePreview && (
                   <div className="mt-3">
                     <Image
                       src={imagePreview}
-                      width={130}
-                      height={130}
-                      alt="Product Preview"
-                      className="w-32 h-32 object-cover border rounded-xl shadow-sm"
+                      width={120}
+                      height={120}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-lg border"
                     />
                   </div>
                 )}
@@ -513,7 +507,7 @@ export default function ProductManagement() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="flex-1 bg-black text-white py-2 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 bg-black text-white py-2 rounded-lg hover:bg-gray-700 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -556,8 +550,8 @@ export default function ProductManagement() {
             <h3 className="font-semibold text-lg">{product.name}</h3>
 
             <p className="text-sm text-gray-500 mb-2">
-              {product.category?.name}{" "}
-              {product.subcategory && `- ${product.subcategory}`}
+              {product.category?.name}
+              {product.subcategory && ` - ${product.subcategory}`}
             </p>
 
             <div className="flex items-center gap-2 mb-3">

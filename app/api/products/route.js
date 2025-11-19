@@ -56,7 +56,11 @@ export async function POST(req) {
 
   data.imageUrl = imageUrl;
 
-  // Create product
+  // ⭐ FINAL FIX: Ensure subcategory ALWAYS exists
+  if (!data.subcategory) {
+    data.subcategory = "";
+  }
+
   const product = await Product.create(data);
 
   return NextResponse.json({
@@ -65,4 +69,3 @@ export async function POST(req) {
     data: product,
   });
 }
-

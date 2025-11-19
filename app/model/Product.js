@@ -1,20 +1,33 @@
 import mongoose from "mongoose";
 
-const nutritionSchema = new mongoose.Schema({
-  energy: String,
-  carbohydrate: String,
-  fat: String,
-  protein: String,
-}, { _id: false });
+const nutritionSchema = new mongoose.Schema(
+  {
+    energy: String,
+    carbohydrate: String,
+    fat: String,
+    protein: String,
+  },
+  { _id: false }
+);
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
-  subcategory: { type: String, required: true },
+
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+    required: true,
+  },
+
+  // ⭐ FIXED — subcategory NOT required
+  subcategory: {
+    type: String,
+    default: "",
+    required: false,
+  },
 
   tags: [String],
 
-  // ⭐ FIX (you were missing these fields)
   weight: { type: String, default: "" },
   pieces: { type: String, default: "" },
   serves: { type: Number, default: 1 },
@@ -22,10 +35,11 @@ const productSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   originalPrice: Number,
   discount: String,
+
   description: String,
   highlights: [String],
-  imageUrl: String,
 
+  imageUrl: String,
   nutrition: nutritionSchema,
 
   isHit: { type: Boolean, default: false },

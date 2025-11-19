@@ -11,40 +11,41 @@ export default function CategoryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const categoryId = params.id;
   const { categories, products, loading } = useShop();
 
-  // Get ?sub=Raw
+  const categoryId = params.id;
+
+  // Selected Subcategory
   const initialSub = searchParams.get("sub") || "All";
   const [selectedSubcategory, setSelectedSubcategory] = useState(initialSub);
 
   useEffect(() => {
-    const sub = searchParams.get("sub") || "All";
-    setSelectedSubcategory(sub);
+    setSelectedSubcategory(searchParams.get("sub") || "All");
   }, [searchParams]);
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-10 text-center text-gray-500">
-        Loading...
-      </div>
-    );
-  }
+  // 🔥 DO NOT RETURN ANYTHING BEFORE HOOKS ARE DONE!
+  // ALL useMemo hooks should be above any return
 
   // Find category
-  const category = categories?.find((c) => c?._id === categoryId);
+  const category = useMemo(() => {
+    return categories?.find((c) => c?._id === categoryId) || null;
+  }, [categories, categoryId]);
 
-  // ⭐ FIXED — Correct filtering for category products  
+  // Products in this category
   const categoryProducts = useMemo(() => {
-    return products.filter(
-      (p) =>
-        p?.category === categoryId ||         // when category is string ID
-        p?.category?._id === categoryId       // when category is object
+    return (
+      products?.filter(
+        (p) =>
+          p?.category === categoryId ||
+          p?.category?._id === categoryId
+      ) || []
     );
-  }, [categoryId, products]);
+  }, [products, categoryId]);
 
-  // Build subcategory list
+  // Subcategories
   const subcategories = useMemo(() => {
+    if (!category) return ["All"];
+
     const categorySubs =
       category?.subcategories?.map((s) => s?.name).filter(Boolean) || [];
 
@@ -55,7 +56,7 @@ export default function CategoryPage() {
     return ["All", ...new Set([...categorySubs, ...productSubs])];
   }, [category, categoryProducts]);
 
-  // ⭐ FIXED — Filter by selected subcategory
+  // Filter by selected subcategory
   const filteredProducts = useMemo(() => {
     if (selectedSubcategory === "All") return categoryProducts;
 
@@ -66,18 +67,17 @@ export default function CategoryPage() {
     );
   }, [categoryProducts, selectedSubcategory]);
 
-  // Get subcategory image
-  const getSubcategoryImage = (subName) => {
-    if (subName === "All") return category?.imageUrl;
+  // Subcategory image
+  const getSubcategoryImage = (sub) => {
+    if (sub === "All") return category?.imageUrl;
 
-    const found = category?.subcategories?.find((s) => s?.name === subName);
+    const found = category?.subcategories?.find((s) => s?.name === sub);
     if (found?.imageUrl) return found.imageUrl;
 
-    const product = categoryProducts.find((p) => p?.subcategory === subName);
+    const product = categoryProducts.find((p) => p?.subcategory === sub);
     return product?.imageUrl;
   };
 
-  // Update URL on click
   const handleSubcategoryClick = (subcat) => {
     const query = subcat === "All" ? "" : `?sub=${encodeURIComponent(subcat)}`;
     router.push(`/category/${categoryId}${query}`);
@@ -86,6 +86,15 @@ export default function CategoryPage() {
   const handleProductClick = (productId) => {
     router.push(`/product/${productId}`);
   };
+
+  // 🔥 SAFE RETURNS (AFTER ALL HOOKS)
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-10 text-center text-gray-500">
+        Loading...
+      </div>
+    );
+  }
 
   if (!category) {
     return (
@@ -97,7 +106,6 @@ export default function CategoryPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-
       {/* Breadcrumb */}
       <div className="mb-4 text-sm text-gray-600">
         <span

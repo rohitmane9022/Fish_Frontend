@@ -3,10 +3,11 @@ import { connectDB } from "@/lib/db";
 import Product from "@/app/model/Product";
 import cloudinary from "@/lib/cloudinary";
 
-// ⭐⭐⭐ PUT — Update Product
+// PUT — Update Product
 export async function PUT(req, context) {
   await connectDB();
 
+  // ⭐ FIX — unwrap async params
   const { id } = await context.params;
 
   try {
@@ -23,12 +24,15 @@ export async function PUT(req, context) {
       } else if (key === "isHit") {
         updateData[key] = value === "true";
       } else {
-        // ⭐ THIS FIXES weight, pieces, ALL OTHER FIELDS
         updateData[key] = value;
       }
     }
 
+    // ⭐ FIX: subcategory always required
+    if (!updateData.subcategory) updateData.subcategory = "";
+
     const oldProduct = await Product.findById(id);
+
     const imageFile = formData.get("image");
 
     if (imageFile && imageFile.name) {
@@ -42,6 +46,7 @@ export async function PUT(req, context) {
 
       updateData.imageUrl = uploaded.secure_url;
 
+      // Delete old image
       if (oldProduct?.imageUrl) {
         const publicId = oldProduct.imageUrl.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`products/${publicId}`);
@@ -59,19 +64,16 @@ export async function PUT(req, context) {
     });
   } catch (err) {
     console.error("UPDATE ERROR:", err);
-    return NextResponse.json(
-      { error: "Error updating product" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error updating product" }, { status: 500 });
   }
 }
 
-
-// ⭐⭐⭐ DELETE — Remove Product
+// DELETE — Remove Product
 export async function DELETE(req, context) {
   await connectDB();
 
-  const { id } = await context.params; // FIXED
+  // ⭐ FIX — unwrap async params
+  const { id } = await context.params;
 
   try {
     const product = await Product.findById(id);
@@ -92,9 +94,6 @@ export async function DELETE(req, context) {
     });
   } catch (err) {
     console.error("DELETE ERROR:", err);
-    return NextResponse.json(
-      { error: "Failed to delete product" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
   }
 }
