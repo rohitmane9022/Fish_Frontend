@@ -19,23 +19,84 @@ const Home1 = () => {
     router.push(`/product/${productId}`);
   };
 
+  // Enhanced loading state with better animation
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-full py-20">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 border-4 border-[#e11d48] border-t-transparent rounded-full animate-spin" />
-          <p className="text-lg font-semibold text-gray-700">
-            Loading products...
-          </p>
+      <div className="flex items-center justify-center min-h-[60vh] py-20">
+        <div className="flex flex-col items-center gap-6">
+          {/* Animated loader */}
+          <div className="relative">
+            <div className="w-20 h-20 border-4 border-gray-200 rounded-full" />
+            <div className="w-20 h-20 border-4 border-[#e11d48] border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
+          </div>
+          
+          {/* Loading text with pulse animation */}
+          <div className="text-center space-y-2">
+            <p className="text-xl font-semibold text-gray-800 animate-pulse">
+              Loading products...
+            </p>
+            <p className="text-sm text-gray-500">
+              Please wait while we fetch fresh deals
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!products || !categories) {
+  
+  if (!categories || !products) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600">Please can you Refresh the page again!</p>
+      <div className="flex items-center justify-center min-h-[60vh] py-20">
+        <div className="max-w-md mx-auto px-4">
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-gray-100">
+            {/* Error icon */}
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg 
+                className="w-8 h-8 text-[#e11d48]" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                />
+              </svg>
+            </div>
+
+            {/* Error message */}
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              Oops! Something went wrong
+            </h3>
+            <p className="text-gray-600 mb-6">
+              We couldn't load the products. Please try refreshing the page.
+            </p>
+
+            {/* Refresh button */}
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 mx-auto"
+            >
+              <svg 
+                className="w-5 h-5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                />
+              </svg>
+              Refresh Page
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

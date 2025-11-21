@@ -2,10 +2,29 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Category from "@/app/model/Category";
 
+// Custom sorting priority
+const priority = {
+  "Fish": 1,
+  "Fresh Chicken": 2,
+  "Zorabian": 3,
+  "Venky’s (Ready to Cook Product)": 4,
+  "Captain Cook (Ready to Cook Product)": 5,
+  "Gadre (Ready to Cook Fish)": 6,
+  "McCain (Ready to Cook Product)": 7,
+  "Green Peas": 8,
+  "Paratha": 9,
+};
+
 // ✅ GET: All Categories
 export async function GET() {
   await connectDB();
-  const categories = await Category.find();
+  let categories = await Category.find();
+
+  // Apply sorting FIX
+  categories = categories.sort(
+    (a, b) => (priority[a.name] || 999) - (priority[b.name] || 999)
+  );
+
   return NextResponse.json(categories);
 }
 
@@ -20,7 +39,6 @@ export async function POST(req) {
 
   let imageUrl = null;
 
-  // If you upload the image using Next.js static public folder
   if (imageFile && typeof imageFile.name === "string") {
     const bytes = await imageFile.arrayBuffer();
     const buffer = Buffer.from(bytes);
