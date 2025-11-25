@@ -6,6 +6,7 @@ import { useShop } from "@/app/context/ShopContext";
 import Categories from "./Categories";
 import WhyChooseUs from "./WhyChooseUs";
 import { slugify } from "@/lib/utils";
+import AboutUs from "./AboutUs";
 
 const Home1 = () => {
   const router = useRouter();
@@ -377,6 +378,7 @@ const Home1 = () => {
       </div>
 
       <WhyChooseUs />
+      <AboutUs/>
     </div>
   );
 };

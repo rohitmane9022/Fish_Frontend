@@ -36,7 +36,6 @@ export default function ProductManagement() {
     },
   });
 
-  // Fetch products
   const fetchProducts = () => {
     fetch("/api/products")
       .then((res) => res.json())
@@ -73,7 +72,7 @@ export default function ProductManagement() {
     setFormData({
       ...formData,
       category: e.target.value,
-      subcategory: "", // reset subcategory on category change
+      subcategory: "",
     });
   };
 
@@ -159,7 +158,7 @@ export default function ProductManagement() {
     setEditingProduct(null);
   };
 
-  // Submit Product
+  // ⭐ FINAL UPDATED SUBMIT (Full Fix Included)
   const handleSubmit = async () => {
     if (!formData.category) {
       toast.error("Please select a category");
@@ -170,7 +169,6 @@ export default function ProductManagement() {
       (cat) => cat.name === formData.category
     );
 
-    // Check if category has subcategories
     if (
       selectedCategoryObj?.subcategories?.length > 0 &&
       !formData.subcategory
@@ -187,10 +185,7 @@ export default function ProductManagement() {
     data.append("name", formData.name);
     data.append("price", formData.price);
     data.append("isHit", formData.isHit);
-
-    
     data.append("subcategory", formData.subcategory || "");
-
     if (formData.originalPrice) data.append("originalPrice", formData.originalPrice);
     if (formData.discount) data.append("discount", formData.discount);
     if (formData.description) data.append("description", formData.description);
@@ -198,11 +193,31 @@ export default function ProductManagement() {
     if (formData.pieces) data.append("pieces", formData.pieces);
     if (formData.serves) data.append("serves", formData.serves);
 
-    if (formData.tags)
-      data.append("tags", JSON.stringify(formData.tags.split(",").map((t) => t.trim())));
+    // ⭐ FIXED TAGS (always send)
+    data.append(
+      "tags",
+      formData.tags.trim() === ""
+        ? JSON.stringify([])
+        : JSON.stringify(
+            formData.tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter((t) => t !== "")
+          )
+    );
 
-    if (formData.highlights)
-      data.append("highlights", JSON.stringify(formData.highlights.split(",").map((h) => h.trim())));
+    // ⭐ FIXED HIGHLIGHTS (always send)
+    data.append(
+      "highlights",
+      formData.highlights.trim() === ""
+        ? JSON.stringify([])
+        : JSON.stringify(
+            formData.highlights
+              .split(",")
+              .map((h) => h.trim())
+              .filter((h) => h !== "")
+          )
+    );
 
     data.append("nutrition", JSON.stringify(formData.nutrition));
 
@@ -252,8 +267,7 @@ export default function ProductManagement() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto my-10 px-4">
-
+    <div className="max-w-6xl mx-auto my-10 px-4">
       {/* Logout */}
       <div className="flex justify-end mb-5">
         <button
@@ -281,12 +295,11 @@ export default function ProductManagement() {
         </button>
       </div>
 
-      {/* FORM MODAL */}
+      {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
-
-            {/* Modal Header */}
+            {/* Header */}
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
               <h2 className="text-2xl font-semibold">
                 {editingProduct ? "Update Product" : "Add New Product"}
@@ -299,9 +312,8 @@ export default function ProductManagement() {
               </button>
             </div>
 
-            {/* FORM CONTENT */}
+            {/* Body */}
             <div className="p-6 space-y-4">
-
               <input
                 type="text"
                 name="name"
@@ -319,10 +331,8 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full min-h-20"
               />
 
-              {/* Category + Subcategory */}
+              {/* Category */}
               <div className="grid grid-cols-2 gap-4">
-
-                {/* Category */}
                 <select
                   name="category"
                   value={formData.category}
@@ -337,7 +347,6 @@ export default function ProductManagement() {
                   ))}
                 </select>
 
-                {/* Subcategory */}
                 {subcategories.length > 0 ? (
                   <select
                     name="subcategory"
@@ -359,14 +368,12 @@ export default function ProductManagement() {
                       className="border p-2 rounded-lg w-full bg-gray-100"
                       placeholder="No subcategory"
                     />
-
-                    {/* ⭐ HIDDEN SUBCATEGORY FIX */}
                     <input type="hidden" name="subcategory" value="" />
                   </>
                 )}
               </div>
 
-              {/* Price Fields */}
+              {/* Prices */}
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="number"
@@ -396,7 +403,7 @@ export default function ProductManagement() {
                 />
               </div>
 
-              {/* Weight / Pieces / Serves */}
+              {/* Weight & Pieces */}
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="text"
@@ -442,7 +449,7 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full"
               />
 
-              {/* Hit Product */}
+              {/* Hit */}
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"

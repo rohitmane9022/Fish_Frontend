@@ -23,7 +23,6 @@ export default function Header() {
 
   const { cartItems, wishlist, products, categories } = useShop();
 
-  // 🔍 SEARCH FILTER
   const filteredProducts =
     searchQuery.trim() === ""
       ? []
@@ -55,23 +54,50 @@ export default function Header() {
     <header className="border-b bg-white sticky top-0 z-50">
 
       {/* WRAPPER */}
-      <div className="container max-w-6xl mx-auto px-4 py-4 flex items-center gap-4">
+      <div className="container max-w-6xl mx-auto px-4 py-4">
 
-        {/* LOGO */}
-        <Link href="/" className="flex-shrink-0">
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={130}
-            height={50}
-            className="object-contain"
-            priority
-          />
-        </Link>
+        {/* TOP ROW ON MOBILE */}
+        <div className="flex items-center justify-between md:hidden mb-3">
 
-        {/* SEARCH BAR (Always visible) */}
-        <div className="flex-1 min-w-[200px] relative">
-          <div className="flex items-center w-full border border-gray-300 rounded-lg overflow-hidden">
+          {/* LOGO */}
+          <Link href="/" className="flex-shrink-0">
+            <Image
+              src="/logo4.png"
+              alt="Logo"
+              width={120}
+              height={50}
+              className="object-contain"
+              priority
+            />
+          </Link>
+
+          {/* MOBILE ICONS */}
+          <div className="flex items-center gap-5">
+            {/* WISHLIST */}
+            <Link href="/wishlist" className="relative">
+              <Heart className="w-6 h-6 text-gray-700" />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#e11d48] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+
+            {/* CART */}
+            <Link href="/cart" className="relative">
+              <ShoppingCart className="w-6 h-6 text-gray-700" />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#e11d48] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItems.length}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+
+        {/* SEARCH BAR — FULL WIDTH ON MOBILE */}
+        <div className="w-full md:w-auto md:flex-1 relative mb-3 md:mb-0">
+          <div className="flex items-center w-full md:hidden border border-gray-300 rounded-lg overflow-hidden">
             <input
               type="text"
               value={searchQuery}
@@ -84,7 +110,7 @@ export default function Header() {
             </button>
           </div>
 
-          {/* SEARCH DROPDOWN */}
+          {/* SEARCH RESULTS */}
           {filteredProducts.length > 0 && (
             <div className="absolute left-0 right-0 top-12 bg-white border rounded-lg shadow-lg max-h-80 overflow-y-auto z-50">
               {filteredProducts.map((product) => (
@@ -112,98 +138,133 @@ export default function Header() {
           )}
         </div>
 
-        {/* RIGHT ICONS — HIDDEN ON MOBILE */}
-        <div className="hidden md:flex items-center gap-6 ml-auto">
+        {/* DESKTOP HEADER ROW */}
+        <div className="hidden md:flex items-center gap-6">
 
-          <Link href="/store" className={getLinkClass("/store")}>
-            <Store className="w-5 h-5" />
-            <span>Stores</span>
+          {/* LOGO */}
+          <Link href="/" className="flex-shrink-0">
+            <Image
+              src="/logo4.png"
+              alt="Logo"
+              width={140}
+              height={50}
+              className="object-contain"
+              priority
+            />
           </Link>
 
-          {/* CATEGORY DROPDOWN */}
-          <div className="relative">
-            <button
-              onClick={() => setCatMenuOpen(!catMenuOpen)}
-              className="flex items-center gap-2 text-gray-700 hover:text-[#e11d48]"
-            >
-              <Layers className="w-5 h-5" /> Categories
-            </button>
-
-            {catMenuOpen && (
-              <div className="absolute top-12 right-0 w-[650px] bg-white border rounded-lg shadow-xl z-30 flex">
-
-                {/* LEFT CATEGORY LIST */}
-                <div className="w-60 border-r p-4">
-                  {categories.map((cat, idx) => (
-                    <div
-                      key={cat._id}
-                      onMouseEnter={() => setActiveCategoryIdx(idx)}
-                      onClick={() => handleCategoryClick(cat._id)}
-                      className={`flex items-center gap-3 px-2 py-2 cursor-pointer rounded ${
-                        idx === activeCategoryIdx ? "bg-gray-50 font-semibold" : ""
-                      }`}
-                    >
-                      {cat.imageUrl && (
-                        <Image
-                          src={cat.imageUrl}
-                          width={32}
-                          height={32}
-                          alt={cat.name}
-                          className="rounded-full"
-                        />
-                      )}
-                      {cat.name}
-                    </div>
-                  ))}
-                </div>
-
-                {/* RIGHT SUBCATEGORY LIST */}
-                <div className="flex-1 p-4">
-                  {(categories[activeCategoryIdx]?.subcategories || []).map(
-                    (sub) => (
-                      <p
-                        key={sub.name}
-                        className="py-1 cursor-pointer hover:text-[#e11d48] font-medium"
-                        onClick={() =>
-                          handleSubcategoryClick(
-                            categories[activeCategoryIdx]._id,
-                            sub.name
-                          )
-                        }
-                      >
-                        {sub.name}
-                      </p>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
+          {/* SEARCH BAR */}
+          <div className="flex-1 relative">
+            <div className="flex items-center w-full border border-gray-300 rounded-lg overflow-hidden">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for any delicious product"
+                className="flex-1 px-4 py-2 text-sm outline-none"
+              />
+              <button className="px-3">
+                <Search className="w-5 h-5 text-gray-700" />
+              </button>
+            </div>
           </div>
 
-          {/* WISHLIST */}
-          <Link href="/wishlist" className={getLinkClass("/wishlist") + " relative"}>
-            <Heart className="w-5 h-5" />
-            <span>Wishlist</span>
-            {wishlist.length > 0 && (
-              <span className="absolute -top-2 -right-3 bg-[#e11d48] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
+          {/* DESKTOP ICONS */}
+          <div className="flex items-center gap-6 ml-auto">
 
-          {/* CART */}
-          <Link href="/cart" className={getLinkClass("/cart") + " relative"}>
-            <ShoppingCart className="w-5 h-5" />
-            <span>Cart</span>
-            {cartItems.length > 0 && (
-              <span className="absolute -top-2 -right-3 bg-[#e11d48] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {cartItems.length}
-              </span>
-            )}
-          </Link>
+            <Link href="/store" className={getLinkClass("/store")}>
+              <Store className="w-5 h-5" />
+              <span>Stores</span>
+            </Link>
 
+            {/* CATEGORY LIST */}
+            <div className="relative">
+              <button
+                onClick={() => setCatMenuOpen(!catMenuOpen)}
+                className="flex items-center gap-2 text-gray-700 hover:text-[#e11d48]"
+              >
+                <Layers className="w-5 h-5" /> Categories
+              </button>
+
+              {catMenuOpen && (
+                <div className="absolute top-12 right-0 w-[650px] bg-white border rounded-lg shadow-xl z-30 flex">
+
+                  {/* CATEGORY LEFT */}
+                  <div className="w-60 border-r p-4">
+                    {categories.map((cat, idx) => (
+                      <div
+                        key={cat._id}
+                        onMouseEnter={() => setActiveCategoryIdx(idx)}
+                        onClick={() => handleCategoryClick(cat._id)}
+                        className={`flex items-center gap-3 px-2 py-2 cursor-pointer rounded ${
+                          idx === activeCategoryIdx
+                            ? "bg-gray-50 font-semibold"
+                            : ""
+                        }`}
+                      >
+                        {cat.imageUrl && (
+                          <Image
+                            src={cat.imageUrl}
+                            width={32}
+                            height={32}
+                            alt={cat.name}
+                            className="rounded-full"
+                          />
+                        )}
+                        {cat.name}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* SUBCATEGORY RIGHT */}
+                  <div className="flex-1 p-4">
+                    {(categories[activeCategoryIdx]?.subcategories || []).map(
+                      (sub) => (
+                        <p
+                          key={sub.name}
+                          className="py-1 cursor-pointer hover:text-[#e11d48] font-medium"
+                          onClick={() =>
+                            handleSubcategoryClick(
+                              categories[activeCategoryIdx]._id,
+                              sub.name
+                            )
+                          }
+                        >
+                          {sub.name}
+                        </p>
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* WISHLIST */}
+            <Link
+              href="/wishlist"
+              className={getLinkClass("/wishlist") + " relative"}
+            >
+              <Heart className="w-5 h-5" />
+              <span>Wishlist</span>
+              {wishlist.length > 0 && (
+                <span className="absolute -top-2 -right-3 bg-[#e11d48] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+
+            {/* CART */}
+            <Link href="/cart" className={getLinkClass("/cart") + " relative"}>
+              <ShoppingCart className="w-5 h-5" />
+              <span>Cart</span>
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-3 bg-[#e11d48] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItems.length}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
-
       </div>
     </header>
   );

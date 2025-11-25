@@ -7,14 +7,12 @@ import MobileNav from "@/components/MobileNav";
 import CartPopup from "@/components/CartPopup";   
 import { Toaster } from "react-hot-toast";
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import favicon from "../public/favicon.ico"
+
 
 export const metadata = {
   title: "Bombay Sea Food – Fresh Fish & Seafood Delivery in Mumbai",
   description: "Order online fresh fish, prawns, and seafood with Bombay Sea Food. Fast home delivery of premium quality, sustainable catch in Mumbai.",
-  icons:{
-    icon: "/favicon.ico",
-  }
+ 
 };
 
 

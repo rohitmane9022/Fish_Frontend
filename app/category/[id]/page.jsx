@@ -23,8 +23,6 @@ export default function CategoryPage() {
     setSelectedSubcategory(searchParams.get("sub") || "All");
   }, [searchParams]);
 
-  // 🔥 DO NOT RETURN ANYTHING BEFORE HOOKS ARE DONE!
-  // ALL useMemo hooks should be above any return
 
   // Find category
   const category = useMemo(() => {
