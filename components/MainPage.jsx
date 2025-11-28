@@ -10,7 +10,8 @@ import AboutUs from "./AboutUs";
 
 const Home1 = () => {
   const router = useRouter();
-  const { products, categories, loading, error, retryCount, manualRetry } = useShop();
+  const { products, categories, loading, error, retryCount, manualRetry } =
+    useShop();
 
   const handleCategoryClick = (categoryId) => {
     router.push(`/category/${categoryId}`);
@@ -20,155 +21,43 @@ const Home1 = () => {
     router.push(`/product/${productId}`);
   };
 
-  // Enhanced loading state with retry info
+  // ---------------------------
+  // LOADING UI
+  // ---------------------------
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] py-20">
         <div className="flex flex-col items-center gap-6">
-          {/* Animated loader */}
           <div className="relative">
             <div className="w-20 h-20 border-4 border-gray-200 rounded-full" />
             <div className="w-20 h-20 border-4 border-[#e11d48] border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
           </div>
-          
-          {/* Loading text with pulse animation */}
-          <div className="text-center space-y-2">
-            <p className="text-xl font-semibold text-gray-800 animate-pulse">
-              {retryCount > 0 ? `Retrying... (${retryCount}/3)` : "Loading products..."}
-            </p>
-            <p className="text-sm text-gray-500">
-              {retryCount > 0 
-                ? "Connection issue detected, retrying automatically" 
-                : "Please wait while we fetch fresh deals"}
-            </p>
-          </div>
+          <p className="text-xl font-semibold text-gray-800 animate-pulse">
+            {retryCount > 0
+              ? `Retrying... (${retryCount}/3)`
+              : "Loading products..."}
+          </p>
         </div>
       </div>
     );
   }
 
-  // Error state after max retries
+  // ---------------------------
+  // ERROR UI
+  // ---------------------------
   if (error && retryCount >= 3) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] py-20">
         <div className="max-w-md mx-auto px-4">
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-gray-100">
-            {/* Error icon */}
-            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg 
-                className="w-8 h-8 text-[#e11d48]" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
-                />
-              </svg>
-            </div>
-
-            {/* Error message */}
             <h3 className="text-xl font-bold text-gray-800 mb-2">
               Unable to Load Products
             </h3>
-            <p className="text-gray-600 mb-2">
-              We tried loading the products 3 times but couldn't connect to the server.
-            </p>
-            <p className="text-sm text-gray-500 mb-6">
-              Error: {error}
-            </p>
-
-            {/* Retry buttons */}
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={manualRetry}
-                className="bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2"
-              >
-                <svg 
-                  className="w-5 h-5" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
-                  />
-                </svg>
-                Try Again
-              </button>
-
-              <button
-                onClick={() => window.location.reload()}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-3 rounded-lg transition-colors duration-200"
-              >
-                Refresh Page
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Enhanced error state when data is missing but no explicit error
-  if (!categories || !products) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh] py-20">
-        <div className="max-w-md mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-gray-100">
-            {/* Warning icon */}
-            <div className="w-16 h-16 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg 
-                className="w-8 h-8 text-yellow-600" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
-                />
-              </svg>
-            </div>
-
-            {/* Error message */}
-            <h3 className="text-xl font-bold text-gray-800 mb-2">
-              Oops! Something went wrong
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {!products && !categories 
-                ? "We couldn't load categories and products."
-                : !products 
-                ? "We couldn't load products." 
-                : "We couldn't load categories."}
-            </p>
-
-            {/* Retry button */}
+            <p className="text-sm text-gray-500 mb-6">Error: {error}</p>
             <button
               onClick={manualRetry}
-              className="bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 mx-auto"
+              className="bg-[#e11d48] hover:bg-[#be123c] text-white px-6 py-3 rounded-lg"
             >
-              <svg 
-                className="w-5 h-5" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
-                />
-              </svg>
               Retry
             </button>
           </div>
@@ -177,27 +66,41 @@ const Home1 = () => {
     );
   }
 
-  // Return category name directly
-  const getCategoryName = (product) => {
-    return product?.category?.name?.toLowerCase() || "";
-  };
+  if (!categories || !products) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] py-20">
+        <p className="text-gray-600">Something went wrong...</p>
+      </div>
+    );
+  }
 
-  // Filter Products
-  const currentHits = products.filter((p) => p.isHit);
+  // ----------------------------------------
+  // 🔥 IMPORTANT: FILTER OUT OUT-OF-STOCK
+  // ----------------------------------------
+  const availableProducts = products.filter((p) => p.inStock !== false);
 
-  const fishProducts = products.filter((p) =>
+  // Helper to compare
+  const getCategoryName = (product) =>
+    product?.category?.name?.toLowerCase() || "";
+
+  // ----------------------------------------
+  // FILTERED SECTIONS (ONLY IN STOCK)
+  // ----------------------------------------
+  const currentHits = availableProducts.filter((p) => p.isHit);
+
+  const fishProducts = availableProducts.filter((p) =>
     getCategoryName(p).includes("fish")
   );
 
-  const chickenProducts = products.filter((p) =>
+  const chickenProducts = availableProducts.filter((p) =>
     getCategoryName(p).includes("chicken")
   );
 
-  const readyToCookProducts = products.filter((p) =>
+  const readyToCookProducts = availableProducts.filter((p) =>
     p.tags?.includes("ready-to-cook")
   );
 
-  // Get categories for View More slug
+  // Category slugs
   const fishCategory = categories.find((c) =>
     c.name.toLowerCase().includes("fish")
   );
@@ -210,7 +113,7 @@ const Home1 = () => {
     <div>
       <div className="container max-w-6xl mx-auto px-6 py-10">
 
-       
+        {/* -------------------- CATEGORIES -------------------- */}
         <section className="mb-5">
           <h2 className="text-[22px] font-bold">Shop by Categories</h2>
           <p className="text-base text-gray-600 mb-4">
@@ -230,7 +133,7 @@ const Home1 = () => {
           </div>
         </section>
 
-        {/* ================= CURRENT HITS ================= */}
+        {/* -------------------- CURRENT HITS -------------------- */}
         <section className="mb-5">
           <h2 className="text-[22px] font-bold">Our Current Hits</h2>
           <p className="text-base text-gray-600 mb-4">
@@ -266,14 +169,12 @@ const Home1 = () => {
           </div>
         </section>
 
-        {/* ================= FISH SECTION ================= */}
+        {/* -------------------- FISH SECTION -------------------- */}
         <section className="mb-5">
           <h2 className="text-[21px] font-bold">
-            Fish, Exclusive Fish and Seafood
+           Exclusive Seafood
           </h2>
-          <p className="text-base text-gray-600 mb-4">
-            Caught on the same day
-          </p>
+          <p className="text-base text-gray-600 mb-4">Caught on the same day</p>
 
           <div className="flex overflow-x-auto scrollbar-hide gap-8">
             {fishProducts.slice(0, 5).map((product) => (
@@ -304,12 +205,9 @@ const Home1 = () => {
           </div>
         </section>
 
-        {/* ================= CHICKEN SECTION ================= */}
+        {/* -------------------- CHICKEN SECTION -------------------- */}
         <section className="mb-5">
-          <h2 className="text-[21px] font-bold">Best of Chicken</h2>
-          <p className="text-base text-gray-600 mb-4">
-            Our most tender chicken cuts!
-          </p>
+          <h2 className="text-[21px] font-bold mb-3">Best of Chicken</h2>
 
           <div className="flex overflow-x-auto scrollbar-hide gap-8">
             {chickenProducts.slice(0, 5).map((product) => (
@@ -340,12 +238,9 @@ const Home1 = () => {
           </div>
         </section>
 
-        {/* ================= READY TO COOK ================= */}
+        {/* -------------------- READY TO COOK -------------------- */}
         <section>
-          <h2 className="text-[21px] font-bold">Ready to Cook</h2>
-          <p className="text-base text-gray-600 mb-4">
-            Quick and easy meals!
-          </p>
+          <h2 className="text-[21px] font-bold mb-4">Ready to Cook</h2>
 
           <div className="flex overflow-x-auto scrollbar-hide gap-8">
             {readyToCookProducts.slice(0, 5).map((product) => (
@@ -378,7 +273,7 @@ const Home1 = () => {
       </div>
 
       <WhyChooseUs />
-      <AboutUs/>
+      <AboutUs />
     </div>
   );
 };

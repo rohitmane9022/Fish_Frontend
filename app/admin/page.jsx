@@ -4,6 +4,14 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+/**
+ * ProductManagement - Admin product create / update page
+ * - Adds inStock support
+ * - Adds a predefined tag button for "ready-to-cook"
+ * - Allows manual tags input (comma separated)
+ * - Handles edit/create, image preview, toggle stock
+ */
+
 export default function ProductManagement() {
   const [allowed, setAllowed] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -13,6 +21,7 @@ export default function ProductManagement() {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // formData stores fields; tagsArray is the normalized tags array
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -21,13 +30,15 @@ export default function ProductManagement() {
     description: "",
     category: "",
     subcategory: "",
-    tags: "",
+    tagsInput: "", // manual input string, comma separated
+    tagsArray: [], // normalized tags array (used for submit)
     weight: "",
     pieces: "",
     serves: "",
     highlights: "",
     image: null,
     isHit: false,
+    inStock: true,
     nutrition: {
       energy: "",
       carbohydrate: "",
@@ -35,6 +46,8 @@ export default function ProductManagement() {
       protein: "",
     },
   });
+
+  const PREDEFINED_TAGS = ["ready-to-cook"]; // Option C chosen
 
   const fetchProducts = () => {
     fetch("/api/products")
@@ -85,6 +98,9 @@ export default function ProductManagement() {
         ...formData,
         nutrition: { ...formData.nutrition, [key]: value },
       });
+    } else if (name === "tagsInput") {
+      // update manual tag input only
+      setFormData({ ...formData, tagsInput: value });
     } else {
       setFormData({
         ...formData,
@@ -99,6 +115,32 @@ export default function ProductManagement() {
       setFormData({ ...formData, image: file });
       setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  // Toggle predefined tag button
+  const togglePredefinedTag = (tag) => {
+    const already = formData.tagsArray.includes(tag);
+    const newTags = already
+      ? formData.tagsArray.filter((t) => t !== tag)
+      : [...formData.tagsArray, tag];
+
+    setFormData({ ...formData, tagsArray: newTags });
+  };
+
+  // When admin blur the tags input, parse and merge into tagsArray
+  const handleTagsInputBlur = () => {
+    const manual = formData.tagsInput
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t !== "");
+
+    const merged = Array.from(new Set([...formData.tagsArray, ...manual]));
+    setFormData({ ...formData, tagsArray: merged, tagsInput: "" });
+  };
+
+  const handleRemoveTag = (tag) => {
+    const newTags = formData.tagsArray.filter((t) => t !== tag);
+    setFormData({ ...formData, tagsArray: newTags });
   };
 
   const handleEdit = (product) => {
@@ -117,13 +159,15 @@ export default function ProductManagement() {
       description: product.description || "",
       category: categoryObj?.name || "",
       subcategory: product.subcategory || "",
-      tags: product.tags?.join(", ") || "",
+      tagsInput: "",
+      tagsArray: (product.tags || []).map((t) => String(t)),
       weight: product.weight || "",
       pieces: product.pieces || "",
       serves: product.serves || "",
-      highlights: product.highlights?.join(", ") || "",
+      highlights: (product.highlights || []).join(", "),
       image: null,
-      isHit: product.isHit || false,
+      isHit: product.isHit ?? false,
+      inStock: product.inStock ?? true, // default true if missing in DB
       nutrition: {
         energy: product.nutrition?.energy || "",
         carbohydrate: product.nutrition?.carbohydrate || "",
@@ -144,13 +188,15 @@ export default function ProductManagement() {
       description: "",
       category: "",
       subcategory: "",
-      tags: "",
+      tagsInput: "",
+      tagsArray: [],
       weight: "",
       pieces: "",
       serves: "",
       highlights: "",
       image: null,
       isHit: false,
+      inStock: true,
       nutrition: { energy: "", carbohydrate: "", fat: "", protein: "" },
     });
     setShowForm(false);
@@ -158,7 +204,6 @@ export default function ProductManagement() {
     setEditingProduct(null);
   };
 
-  // ⭐ FINAL UPDATED SUBMIT (Full Fix Included)
   const handleSubmit = async () => {
     if (!formData.category) {
       toast.error("Please select a category");
@@ -177,36 +222,39 @@ export default function ProductManagement() {
       return;
     }
 
+    // merge manual tags input (if any) before submit
+    const manual = formData.tagsInput
+      ? formData.tagsInput
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t !== "")
+      : [];
+
+    const tagsToSend = Array.from(new Set([...formData.tagsArray, ...manual]));
+
     const data = new FormData();
     const categoryObj = categories.find((cat) => cat.name === formData.category);
-
     if (categoryObj) data.append("category", categoryObj._id);
 
     data.append("name", formData.name);
     data.append("price", formData.price);
-    data.append("isHit", formData.isHit);
+    data.append("isHit", String(formData.isHit));
+    data.append("inStock", String(formData.inStock)); // send string, backend converts
     data.append("subcategory", formData.subcategory || "");
-    if (formData.originalPrice) data.append("originalPrice", formData.originalPrice);
+
+    if (formData.originalPrice)
+      data.append("originalPrice", formData.originalPrice);
     if (formData.discount) data.append("discount", formData.discount);
     if (formData.description) data.append("description", formData.description);
     if (formData.weight) data.append("weight", formData.weight);
     if (formData.pieces) data.append("pieces", formData.pieces);
     if (formData.serves) data.append("serves", formData.serves);
 
-    // ⭐ FIXED TAGS (always send)
     data.append(
       "tags",
-      formData.tags.trim() === ""
-        ? JSON.stringify([])
-        : JSON.stringify(
-            formData.tags
-              .split(",")
-              .map((t) => t.trim())
-              .filter((t) => t !== "")
-          )
+      JSON.stringify(tagsToSend)
     );
 
-    // ⭐ FIXED HIGHLIGHTS (always send)
     data.append(
       "highlights",
       formData.highlights.trim() === ""
@@ -240,12 +288,37 @@ export default function ProductManagement() {
         resetForm();
         fetchProducts();
       } else {
+        const text = await res.text();
+        console.error("SAVE ERROR", text);
         toast.error("Failed to save product");
       }
     } catch (err) {
+      console.error("SUBMIT ERROR:", err);
       toast.error("Something went wrong!");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleStock = async (product) => {
+    try {
+      const fd = new FormData();
+      fd.append("inStock", String(!product.inStock));
+
+      const res = await fetch(`/api/products/${product._id}`, {
+        method: "PUT",
+        body: fd,
+      });
+
+      if (res.ok) {
+        toast.success("Stock updated!");
+        fetchProducts();
+      } else {
+        toast.error("Failed to update stock");
+      }
+    } catch (err) {
+      console.error("TOGGLE STOCK ERROR:", err);
+      toast.error("Error updating stock");
     }
   };
 
@@ -268,7 +341,6 @@ export default function ProductManagement() {
 
   return (
     <div className="max-w-6xl mx-auto my-10 px-4">
-      {/* Logout */}
       <div className="flex justify-end mb-5">
         <button
           onClick={() => {
@@ -281,7 +353,6 @@ export default function ProductManagement() {
         </button>
       </div>
 
-      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Product Management</h1>
         <button
@@ -295,11 +366,10 @@ export default function ProductManagement() {
         </button>
       </div>
 
-      {/* Modal */}
+      {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
-            {/* Header */}
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
               <h2 className="text-2xl font-semibold">
                 {editingProduct ? "Update Product" : "Add New Product"}
@@ -312,7 +382,6 @@ export default function ProductManagement() {
               </button>
             </div>
 
-            {/* Body */}
             <div className="p-6 space-y-4">
               <input
                 type="text"
@@ -331,7 +400,6 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full min-h-20"
               />
 
-              {/* Category */}
               <div className="grid grid-cols-2 gap-4">
                 <select
                   name="category"
@@ -373,7 +441,6 @@ export default function ProductManagement() {
                 )}
               </div>
 
-              {/* Prices */}
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="number"
@@ -403,7 +470,6 @@ export default function ProductManagement() {
                 />
               </div>
 
-              {/* Weight & Pieces */}
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="text"
@@ -431,14 +497,61 @@ export default function ProductManagement() {
                 />
               </div>
 
-              <input
-                type="text"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                placeholder="Tags (comma separated)"
-                className="border rounded-lg p-2 w-full"
-              />
+              {/* TAGS */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Tags</label>
+
+                {/* Predefined tag buttons */}
+                <div className="flex gap-2 mb-2">
+                  {PREDEFINED_TAGS.map((t) => {
+                    const active = formData.tagsArray.includes(t);
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => togglePredefinedTag(t)}
+                        className={`px-3 py-1 rounded-full border ${
+                          active
+                            ? "bg-[#e11d48] text-white border-[#e11d48]"
+                            : "bg-white text-gray-700"
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* manual input */}
+                <div className="flex gap-2">
+                  <input
+                    name="tagsInput"
+                    value={formData.tagsInput}
+                    onChange={handleChange}
+                    onBlur={handleTagsInputBlur}
+                    placeholder="Add tags (comma separated), then blur"
+                    className="border rounded-lg p-2 flex-1"
+                  />
+                  <div className="flex items-center gap-2">
+                    {/* show existing tags */}
+                    {formData.tagsArray.map((t) => (
+                      <div
+                        key={t}
+                        className="bg-gray-100 px-2 py-1 rounded-full flex items-center gap-2"
+                      >
+                        <span className="text-sm">{t}</span>
+                        <button
+                          onClick={() => handleRemoveTag(t)}
+                          className="text-xs text-gray-500"
+                          type="button"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
               <input
                 type="text"
@@ -449,15 +562,27 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full"
               />
 
-              {/* Hit */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="isHit"
-                  checked={formData.isHit}
-                  onChange={handleChange}
-                />
-                <label>Is Hit Product?</label>
+              {/* HIT + INSTOCK */}
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="isHit"
+                    checked={formData.isHit}
+                    onChange={handleChange}
+                  />
+                  Hit Product?
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="inStock"
+                    checked={formData.inStock}
+                    onChange={handleChange}
+                  />
+                  In Stock?
+                </label>
               </div>
 
               {/* Nutrition */}
@@ -537,7 +662,7 @@ export default function ProductManagement() {
         </div>
       )}
 
-      {/* PRODUCT LIST */}
+      {/* Product List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
           <div
@@ -561,20 +686,21 @@ export default function ProductManagement() {
               {product.subcategory && ` - ${product.subcategory}`}
             </p>
 
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl font-bold">₹{product.price}</span>
+            <p className="text-sm mb-2">
+              Status:{" "}
+              <span className={product.inStock ? "text-green-600" : "text-red-600"}>
+                {product.inStock ? "In Stock" : "Out of Stock"}
+              </span>
+            </p>
 
-              {product.originalPrice && (
-                <>
-                  <span className="line-through text-gray-500 text-sm">
-                    ₹{product.originalPrice}
-                  </span>
-                  <span className="text-green-600 text-sm font-medium">
-                    {product.discount}
-                  </span>
-                </>
-              )}
-            </div>
+            <button
+              onClick={() => toggleStock(product)}
+              className={`mb-3 w-full py-1.5 rounded-lg text-white ${
+                product.inStock ? "bg-red-500 hover:bg-red-600" : "bg-green-600 hover:bg-green-700"
+              }`}
+            >
+              {product.inStock ? "Mark Out of Stock" : "Mark In Stock"}
+            </button>
 
             <div className="flex gap-2">
               <button

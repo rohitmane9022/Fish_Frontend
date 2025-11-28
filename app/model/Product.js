@@ -43,6 +43,7 @@ const productSchema = new mongoose.Schema({
   nutrition: nutritionSchema,
 
   isHit: { type: Boolean, default: false },
+  inStock: { type: Boolean, default: true },
 });
 
 export default mongoose.models.Product ||

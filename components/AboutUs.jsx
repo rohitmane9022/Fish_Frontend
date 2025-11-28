@@ -5,7 +5,7 @@ import React from "react";
 
 export default function AboutUs() {
   return (
-    <section className="bg-[#fff7f8] py-20">
+    <section className=" py-20">
       <div className="max-w-6xl mx-auto px-6">
      
         <div className="grid lg:grid-cols-2 gap-12 items-center">

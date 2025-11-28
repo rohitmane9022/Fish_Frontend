@@ -123,8 +123,9 @@ export default function CategoryPage() {
       <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl p-4 mb-6 flex items-center gap-3">
         <span className="text-3xl">📢</span>
         <span className="font-bold text-lg">
-          Tested & inspected by safety experts
-        </span>
+  Tested & inspected by safety experts — with delivery across Mumbai.
+</span>
+
       </div>
 
       {/* Subcategory tabs */}
@@ -172,17 +173,10 @@ export default function CategoryPage() {
             onClick={() => handleProductClick(product?._id)}
             className="cursor-pointer"
           >
-            <ProductCard2
-              product={product}
-              image={product.imageUrl}
-              title={product?.name}
-              weight={product?.weight}
-              pieces={product?.pieces}
-              serves={product?.serves}
-              price={product?.price}
-              originalPrice={product?.originalPrice}
-              discount={product?.discount}
-            />
+           <ProductCard2
+  product={product}
+  inStock={product.inStock}   // ⭐ NEW
+/>
           </div>
         ))}
       </div>

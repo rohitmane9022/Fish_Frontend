@@ -12,12 +12,13 @@ export function SiteFooter() {
 
         {/* About */}
         <div>
-          <h3 className="font-semibold mb-3">About</h3>
-          <p className="text-sm text-muted-foreground">
-            Bombay Seafood — delivering premium, fresh catch straight from the shore since 1985.
-            Trusted for quality, freshness, and same-day delivery.
-          </p>
-        </div>
+  <h3 className="font-semibold mb-3">About</h3>
+  <p className="text-sm text-muted-foreground">
+    Bombay Seafood — trusted since 1985 for premium, fresh catch.
+    Expertly cleaned, quality-checked, and delivered across Mumbai same day.
+  </p>
+</div>
+
 
         {/* Categories */}
         <div>
@@ -53,7 +54,7 @@ export function SiteFooter() {
         href="mailto:bombayseafood1985@gmail.com"
         className="flex items-center gap-2 hover:underline"
       >
-        <span className="text-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><g fill="none"><path fill="currentColor" d="M3 5V4a1 1 0 0 0-1 1zm18 0h1a1 1 0 0 0-1-1zM3 6h18V4H3zm17-1v12h2V5zm-1 13H5v2h14zM4 17V5H2v12zm1 1a1 1 0 0 1-1-1H2a3 3 0 0 0 3 3zm15-1a1 1 0 0 1-1 1v2a3 3 0 0 0 3-3z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 5l9 9l9-9"/></g></svg></span>
+        <span className="text-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><g fill="none"><path fill="currentColor" d="M3 5V4a1 1 0 0 0-1 1zm18 0h1a1 1 0 0 0-1-1zM3 6h18V4H3zm17-1v12h2V5zm-1 13H5v2h14zM4 17V5H2v12zm1 1a1 1 0 0 1-1-1H2a3 3 0 0 0 3 3zm15-1a1 1 0 0 1-1 1v2a3 3 0 0 0 3-3z"/><path stroke="currentColor" strokeLinecap="round" stroke-width="2" d="m3 5l9 9l9-9"/></g></svg></span>
         bombayseafood1985@gmail.com
       </Link>
     </li>

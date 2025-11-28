@@ -36,9 +36,12 @@ export async function POST(req) {
   if (data.price) data.price = Number(data.price);
   if (data.originalPrice) data.originalPrice = Number(data.originalPrice);
   if (data.serves) data.serves = Number(data.serves);
-  if (data.isHit) data.isHit = data.isHit === "true";
 
-  // ⭐ CLOUDINARY UPLOAD
+  // Convert booleans
+  data.isHit = data.isHit === "true";
+  data.inStock = data.inStock === "true" || data.inStock === true; // ⭐ ADDED
+
+  // CLOUDINARY UPLOAD
   const imageFile = formData.get("image");
   let imageUrl = null;
 
@@ -56,7 +59,7 @@ export async function POST(req) {
 
   data.imageUrl = imageUrl;
 
-  // ⭐ FINAL FIX: Ensure subcategory ALWAYS exists
+  // Ensure subcategory ALWAYS exists
   if (!data.subcategory) {
     data.subcategory = "";
   }

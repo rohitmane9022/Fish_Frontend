@@ -7,7 +7,6 @@ import cloudinary from "@/lib/cloudinary";
 export async function PUT(req, context) {
   await connectDB();
 
-  // ⭐ FIX — unwrap async params
   const { id } = await context.params;
 
   try {
@@ -23,12 +22,13 @@ export async function PUT(req, context) {
         updateData[key] = Number(value);
       } else if (key === "isHit") {
         updateData[key] = value === "true";
+      } else if (key === "inStock") {               // ⭐ ADDED
+        updateData[key] = value === "true";
       } else {
         updateData[key] = value;
       }
     }
 
-    // ⭐ FIX: subcategory always required
     if (!updateData.subcategory) updateData.subcategory = "";
 
     const oldProduct = await Product.findById(id);
@@ -46,7 +46,6 @@ export async function PUT(req, context) {
 
       updateData.imageUrl = uploaded.secure_url;
 
-      // Delete old image
       if (oldProduct?.imageUrl) {
         const publicId = oldProduct.imageUrl.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`products/${publicId}`);
@@ -72,7 +71,6 @@ export async function PUT(req, context) {
 export async function DELETE(req, context) {
   await connectDB();
 
-  // ⭐ FIX — unwrap async params
   const { id } = await context.params;
 
   try {

@@ -20,13 +20,11 @@ export default function ProductCart({
   const { addToCart, cartItems, updateCartItemQuantity } = useShop();
   const [quantity, setQuantity] = useState(0);
 
-  // ✅ Sync quantity with global cart
   useEffect(() => {
     const item = cartItems.find((item) => item._id === id);
     setQuantity(item ? item.qty : 0);
   }, [cartItems, id]);
 
-  // ✅ Add item to cart
   const handleAddToCart = (e) => {
     e.stopPropagation();
     const product = {
@@ -57,7 +55,6 @@ export default function ProductCart({
   return (
     <div className="w-55 relative rounded-2xl">
       <div className="relative h-40 bg-gray-100 rounded-2xl">
-        {/* 🖼 Product Image */}
         <Image
           src={imageUrl}
           alt={name}
@@ -67,7 +64,6 @@ export default function ProductCart({
           onClick={onClick}
         />
 
-        {/* 🛒 Cart Button */}
         {quantity === 0 ? (
           <button
             onClick={(e) => {
@@ -100,16 +96,17 @@ export default function ProductCart({
         )}
       </div>
 
-      {/* 📄 Product Info */}
       <div className="space-y-2 p-2" onClick={onClick}>
         <h3 className="font-semibold text-base leading-6">{name}</h3>
 
         <div className="flex items-center gap-1.5">
           {weight && <p className="font-semibold text-sm">{weight}</p>}
-          {pieces && (
+
+          {pieces > 0 && (
             <span className="text-xs text-gray-600">| {pieces} Pieces</span>
           )}
-          {serves && (
+
+          {serves > 0 && (
             <span className="text-xs text-gray-600">| Serves {serves}</span>
           )}
         </div>
@@ -125,7 +122,7 @@ export default function ProductCart({
 
           {discount && (
             <span className="text-green-600 text-xs font-semibold">
-              {discount}% off
+              {discount} off
             </span>
           )}
         </div>
