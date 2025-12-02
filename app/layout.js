@@ -12,6 +12,9 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 export const metadata = {
   title: "Bombay Sea Food – Fresh Fish & Seafood Delivery in Mumbai",
   description: "Order online fresh fish, prawns, and seafood with Bombay Sea Food. Fast home delivery of premium quality, sustainable catch in Mumbai.",
+   icons: {
+    icon: '/favicon.ico', 
+  },
  
 };
 
