@@ -88,11 +88,24 @@ export default function CategoryPage() {
   // 🔥 SAFE RETURNS (AFTER ALL HOOKS)
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-10 text-center text-gray-500">
-        Loading...
+      <div className="flex items-center justify-center min-h-[60vh] py-20">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative">
+            {/* Outer circle */}
+            <div className="w-20 h-20 border-4 border-gray-200 rounded-full" />
+  
+            {/* Spinning circle */}
+            <div className="w-20 h-20 border-4 border-[#e11d48] border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
+          </div>
+  
+          <p className="text-xl font-semibold text-gray-800 animate-pulse">
+            Loading category...
+          </p>
+        </div>
       </div>
     );
   }
+  
 
   if (!category) {
     return (
