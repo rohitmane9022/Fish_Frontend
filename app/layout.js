@@ -15,6 +15,9 @@ export const metadata = {
    icons: {
     icon: '/favicon.ico', 
   },
+  keywords: [
+    'Mumbai Sea Food', 'Sea Food Near Me', 'Fresh Sea Food', 'premium quality'
+  ],
  
 };
 
