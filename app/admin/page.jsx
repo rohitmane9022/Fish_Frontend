@@ -14,14 +14,18 @@ import toast from "react-hot-toast";
 
 export default function ProductManagement() {
   const [allowed, setAllowed] = useState(false);
+
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  // formData stores fields; tagsArray is the normalized tags array
+  const [loading, setLoading] = useState(false); // submit loading
+  const [pageLoading, setPageLoading] = useState(true); // page loader ⭐ NEW
+
+  // formData stores fields
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -30,8 +34,8 @@ export default function ProductManagement() {
     description: "",
     category: "",
     subcategory: "",
-    tagsInput: "", // manual input string, comma separated
-    tagsArray: [], // normalized tags array (used for submit)
+    tagsInput: "",
+    tagsArray: [],
     weight: "",
     pieces: "",
     serves: "",
@@ -47,8 +51,9 @@ export default function ProductManagement() {
     },
   });
 
-  const PREDEFINED_TAGS = ["ready-to-cook"]; // Option C chosen
+  const PREDEFINED_TAGS = ["ready-to-cook"];
 
+  // Fetch products
   const fetchProducts = () => {
     fetch("/api/products")
       .then((res) => res.json())
@@ -56,31 +61,56 @@ export default function ProductManagement() {
       .catch((err) => console.error("Error fetching products:", err));
   };
 
+  // LOGIN CHECK
   useEffect(() => {
     const logged = localStorage.getItem("adminLoggedIn");
     if (logged === "true") setAllowed(true);
     else window.location.href = "/admin/login";
   }, []);
 
+  // Fetch categories
   useEffect(() => {
-    fetch("/api/categories")
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .catch((err) => console.error("Error fetching categories:", err));
-  }, []);
+    Promise.all([fetch("/api/categories"), fetch("/api/products")])
+      .then(async ([catRes, prodRes]) => {
+        const categoryData = await catRes.json();
+        const productData = await prodRes.json();
 
-  useEffect(() => {
-    fetchProducts();
+        setCategories(categoryData);
+        setProducts(productData);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setPageLoading(false)); // hide full loader
   }, []);
 
   if (!allowed) return null;
 
+  // ⭐ FULL PAGE LOADING (before categories/products load)
+  if (pageLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] py-20">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative">
+            <div className="w-20 h-20 border-4 border-gray-200 rounded-full" />
+            <div className="w-20 h-20 border-4 border-[#e11d48] border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
+          </div>
+
+          <p className="text-xl font-semibold text-gray-800 animate-pulse">
+            Loading products...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Category + Subcategory
   const selectedCategory = categories.find(
     (cat) => cat.name === formData.category
   );
-
   const subcategories = selectedCategory?.subcategories || [];
 
+  // -----------------------------
+  // HANDLERS
+  // -----------------------------
   const handleCategoryChange = (e) => {
     setFormData({
       ...formData,
@@ -99,7 +129,6 @@ export default function ProductManagement() {
         nutrition: { ...formData.nutrition, [key]: value },
       });
     } else if (name === "tagsInput") {
-      // update manual tag input only
       setFormData({ ...formData, tagsInput: value });
     } else {
       setFormData({
@@ -117,7 +146,6 @@ export default function ProductManagement() {
     }
   };
 
-  // Toggle predefined tag button
   const togglePredefinedTag = (tag) => {
     const already = formData.tagsArray.includes(tag);
     const newTags = already
@@ -127,7 +155,6 @@ export default function ProductManagement() {
     setFormData({ ...formData, tagsArray: newTags });
   };
 
-  // When admin blur the tags input, parse and merge into tagsArray
   const handleTagsInputBlur = () => {
     const manual = formData.tagsInput
       .split(",")
@@ -167,7 +194,7 @@ export default function ProductManagement() {
       highlights: (product.highlights || []).join(", "),
       image: null,
       isHit: product.isHit ?? false,
-      inStock: product.inStock ?? true, // default true if missing in DB
+      inStock: product.inStock ?? true,
       nutrition: {
         energy: product.nutrition?.energy || "",
         carbohydrate: product.nutrition?.carbohydrate || "",
@@ -222,7 +249,6 @@ export default function ProductManagement() {
       return;
     }
 
-    // merge manual tags input (if any) before submit
     const manual = formData.tagsInput
       ? formData.tagsInput
           .split(",")
@@ -239,7 +265,7 @@ export default function ProductManagement() {
     data.append("name", formData.name);
     data.append("price", formData.price);
     data.append("isHit", String(formData.isHit));
-    data.append("inStock", String(formData.inStock)); // send string, backend converts
+    data.append("inStock", String(formData.inStock));
     data.append("subcategory", formData.subcategory || "");
 
     if (formData.originalPrice)
@@ -250,11 +276,7 @@ export default function ProductManagement() {
     if (formData.pieces) data.append("pieces", formData.pieces);
     if (formData.serves) data.append("serves", formData.serves);
 
-    data.append(
-      "tags",
-      JSON.stringify(tagsToSend)
-    );
-
+    data.append("tags", JSON.stringify(tagsToSend));
     data.append(
       "highlights",
       formData.highlights.trim() === ""
@@ -288,12 +310,9 @@ export default function ProductManagement() {
         resetForm();
         fetchProducts();
       } else {
-        const text = await res.text();
-        console.error("SAVE ERROR", text);
         toast.error("Failed to save product");
       }
     } catch (err) {
-      console.error("SUBMIT ERROR:", err);
       toast.error("Something went wrong!");
     } finally {
       setLoading(false);
@@ -317,7 +336,6 @@ export default function ProductManagement() {
         toast.error("Failed to update stock");
       }
     } catch (err) {
-      console.error("TOGGLE STOCK ERROR:", err);
       toast.error("Error updating stock");
     }
   };
@@ -341,6 +359,8 @@ export default function ProductManagement() {
 
   return (
     <div className="max-w-6xl mx-auto my-10 px-4">
+
+      {/* Logout */}
       <div className="flex justify-end mb-5">
         <button
           onClick={() => {
@@ -355,6 +375,7 @@ export default function ProductManagement() {
 
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Product Management</h1>
+
         <button
           onClick={() => {
             resetForm();
@@ -370,6 +391,7 @@ export default function ProductManagement() {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
+
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
               <h2 className="text-2xl font-semibold">
                 {editingProduct ? "Update Product" : "Add New Product"}
@@ -383,6 +405,8 @@ export default function ProductManagement() {
             </div>
 
             <div className="p-6 space-y-4">
+
+              {/* NAME */}
               <input
                 type="text"
                 name="name"
@@ -392,6 +416,7 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full"
               />
 
+              {/* DESCRIPTION */}
               <textarea
                 name="description"
                 value={formData.description}
@@ -400,6 +425,7 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full min-h-20"
               />
 
+              {/* CATEGORY + SUBCATEGORY */}
               <div className="grid grid-cols-2 gap-4">
                 <select
                   name="category"
@@ -441,6 +467,7 @@ export default function ProductManagement() {
                 )}
               </div>
 
+              {/* PRICE GROUP */}
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="number"
@@ -470,6 +497,7 @@ export default function ProductManagement() {
                 />
               </div>
 
+              {/* WEIGHT / PIECES / SERVES */}
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="text"
@@ -501,7 +529,6 @@ export default function ProductManagement() {
               <div>
                 <label className="block text-sm font-medium mb-2">Tags</label>
 
-                {/* Predefined tag buttons */}
                 <div className="flex gap-2 mb-2">
                   {PREDEFINED_TAGS.map((t) => {
                     const active = formData.tagsArray.includes(t);
@@ -522,18 +549,17 @@ export default function ProductManagement() {
                   })}
                 </div>
 
-                {/* manual input */}
                 <div className="flex gap-2">
                   <input
                     name="tagsInput"
                     value={formData.tagsInput}
                     onChange={handleChange}
                     onBlur={handleTagsInputBlur}
-                    placeholder="Add tags (comma separated), then blur"
+                    placeholder="Add tags (comma separated)"
                     className="border rounded-lg p-2 flex-1"
                   />
+
                   <div className="flex items-center gap-2">
-                    {/* show existing tags */}
                     {formData.tagsArray.map((t) => (
                       <div
                         key={t}
@@ -553,6 +579,7 @@ export default function ProductManagement() {
                 </div>
               </div>
 
+              {/* HIGHLIGHTS */}
               <input
                 type="text"
                 name="highlights"
@@ -585,7 +612,7 @@ export default function ProductManagement() {
                 </label>
               </div>
 
-              {/* Nutrition */}
+              {/* NUTRITION */}
               <div>
                 <label className="font-medium">Nutrition</label>
                 <div className="grid grid-cols-2 gap-4 mt-2">
@@ -602,9 +629,10 @@ export default function ProductManagement() {
                 </div>
               </div>
 
-              {/* Image */}
+              {/* IMAGE UPLOAD */}
               <div>
                 <label className="text-sm">Product Image</label>
+
                 <div className="flex items-center gap-4">
                   <label
                     htmlFor="product-image"
@@ -634,7 +662,7 @@ export default function ProductManagement() {
                 )}
               </div>
 
-              {/* Buttons */}
+              {/* FORM BUTTONS */}
               <div className="flex gap-4 mt-4">
                 <button
                   onClick={handleSubmit}
@@ -657,13 +685,14 @@ export default function ProductManagement() {
                   Cancel
                 </button>
               </div>
+
             </div>
           </div>
         </div>
       )}
 
-      {/* Product List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* PRODUCT LIST */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         {products.map((product) => (
           <div
             key={product._id}
@@ -688,7 +717,11 @@ export default function ProductManagement() {
 
             <p className="text-sm mb-2">
               Status:{" "}
-              <span className={product.inStock ? "text-green-600" : "text-red-600"}>
+              <span
+                className={
+                  product.inStock ? "text-green-600" : "text-red-600"
+                }
+              >
                 {product.inStock ? "In Stock" : "Out of Stock"}
               </span>
             </p>
@@ -696,7 +729,9 @@ export default function ProductManagement() {
             <button
               onClick={() => toggleStock(product)}
               className={`mb-3 w-full py-1.5 rounded-lg text-white ${
-                product.inStock ? "bg-red-500 hover:bg-red-600" : "bg-green-600 hover:bg-green-700"
+                product.inStock
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-green-600 hover:bg-green-700"
               }`}
             >
               {product.inStock ? "Mark Out of Stock" : "Mark In Stock"}
@@ -720,6 +755,7 @@ export default function ProductManagement() {
           </div>
         ))}
       </div>
+
     </div>
   );
 }
