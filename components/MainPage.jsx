@@ -7,6 +7,8 @@ import Categories from "./Categories";
 import WhyChooseUs from "./WhyChooseUs";
 import { slugify } from "@/lib/utils";
 import AboutUs from "./AboutUs";
+import Image from "next/image";
+import HomeLading from "../public/HomeLading.jpeg"
 
 const Home1 = () => {
   const router = useRouter();
@@ -74,18 +76,14 @@ const Home1 = () => {
     );
   }
 
-  // ----------------------------------------
-  // 🔥 IMPORTANT: FILTER OUT OUT-OF-STOCK
-  // ----------------------------------------
+ 
   const availableProducts = products.filter((p) => p.inStock !== false);
 
   // Helper to compare
   const getCategoryName = (product) =>
     product?.category?.name?.toLowerCase() || "";
 
-  // ----------------------------------------
-  // FILTERED SECTIONS (ONLY IN STOCK)
-  // ----------------------------------------
+  
   const currentHits = availableProducts.filter((p) => p.isHit);
 
   const fishProducts = availableProducts.filter((p) =>
@@ -112,6 +110,10 @@ const Home1 = () => {
   return (
     <div>
       <div className="container max-w-6xl mx-auto px-6 py-10">
+
+        <div className="mb-3">
+          <Image src={HomeLading} alt="Home Image" width={100} height={100} className="sm:w-full w-screen sm:h-96 sm:object-cover"/>
+        </div>
 
         {/* -------------------- CATEGORIES -------------------- */}
         <section className="mb-5">
