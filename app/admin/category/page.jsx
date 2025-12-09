@@ -8,9 +8,8 @@ export default function CategoryManagement() {
   const [allowed, setAllowed] = useState(false);
 
   const [categories, setCategories] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(true); // ⭐ ADDED
-
-  const [loadingSubmit, setLoadingSubmit] = useState(false); // ⭐ ADDED
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -22,27 +21,28 @@ export default function CategoryManagement() {
     subcategories: [],
   });
 
-  // LOGIN PROTECTION
+  // ================================================
+  // 🔐 LOGIN PROTECTION
+  // ================================================
   useEffect(() => {
     const logged = localStorage.getItem("adminLoggedIn");
     if (logged === "true") setAllowed(true);
     else window.location.href = "/admin/login";
   }, []);
 
-  // FETCH CATEGORIES
+  // ================================================
+  // 📦 FETCH CATEGORIES
+  // ================================================
   const fetchCategories = () => {
-    setLoadingCategories(true); // ⭐ start loader
+    setLoadingCategories(true);
 
     fetch("/api/categories")
       .then((res) => res.json())
       .then((data) => {
         setCategories(data);
-        setLoadingCategories(false); // ⭐ stop loader
-      })
-      .catch((err) => {
-        console.log("Error:", err);
         setLoadingCategories(false);
-      });
+      })
+      .catch(() => setLoadingCategories(false));
   };
 
   useEffect(() => {
@@ -51,7 +51,9 @@ export default function CategoryManagement() {
 
   if (!allowed) return null;
 
-  // ---------- Form Handlers ----------
+  // ================================================
+  // 🧰 FORM HANDLERS
+  // ================================================
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -71,22 +73,22 @@ export default function CategoryManagement() {
     });
   };
 
-  const updateSub = (index, key, value) => {
+  const updateSub = (idx, key, value) => {
     const updated = [...form.subcategories];
-    updated[index][key] = value;
+    updated[idx][key] = value;
     setForm({ ...form, subcategories: updated });
   };
 
-  const updateSubImage = (index, file) => {
+  const updateSubImage = (idx, file) => {
     const updated = [...form.subcategories];
-    updated[index].image = file;
-    updated[index].preview = URL.createObjectURL(file);
+    updated[idx].image = file;
+    updated[idx].preview = URL.createObjectURL(file);
     setForm({ ...form, subcategories: updated });
   };
 
-  const removeSub = (index) => {
+  const removeSub = (idx) => {
     const updated = [...form.subcategories];
-    updated.splice(index, 1);
+    updated.splice(idx, 1);
     setForm({ ...form, subcategories: updated });
   };
 
@@ -98,19 +100,21 @@ export default function CategoryManagement() {
     setLoadingSubmit(false);
   };
 
-  // ---------- SUBMIT ----------
+  // ================================================
+  // 💾 SUBMIT CATEGORY
+  // ================================================
   const handleSubmit = async () => {
     if (!form.name.trim()) return toast.error("Category name required");
 
-    setLoadingSubmit(true); // ⭐ show loader
+    setLoadingSubmit(true);
 
     const fd = new FormData();
     fd.append("name", form.name);
     if (form.image) fd.append("image", form.image);
 
-    const subPayload = form.subcategories.map((sub, i) => {
-      if (sub.image) fd.append(`subImage_${i}`, sub.image);
-      return { name: sub.name };
+    const subPayload = form.subcategories.map((s, idx) => {
+      if (s.image) fd.append(`subImage_${idx}`, s.image);
+      return { name: s.name };
     });
 
     fd.append("subcategories", JSON.stringify(subPayload));
@@ -121,7 +125,7 @@ export default function CategoryManagement() {
     const res = await fetch(url, { method, body: fd });
 
     if (res.ok) {
-      toast.success(editing ? "Updated!" : "Added!");
+      toast.success(editing ? "Updated!" : "Created!");
       resetForm();
       fetchCategories();
     } else {
@@ -130,9 +134,12 @@ export default function CategoryManagement() {
     }
   };
 
-  // ---------- DELETE ----------
+  // ================================================
+  // ❌ DELETE CATEGORY
+  // ================================================
   const deleteCategory = async (id) => {
-    if (!confirm("Delete this category?")) return;
+    if (!confirm("Delete category?")) return;
+
     const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
 
     if (res.ok) {
@@ -141,49 +148,43 @@ export default function CategoryManagement() {
     } else toast.error("Failed to delete");
   };
 
-  // =====================================================================
-  //                     ⭐ PAGE LOADER FOR FETCH
-  // =====================================================================
+  // ================================================
+  // ⏳ LOADING SCREEN
+  // ================================================
   if (loadingCategories) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] py-20">
-        <div className="flex flex-col items-center gap-6">
-          <div className="relative">
-            <div className="w-20 h-20 border-4 border-gray-200 rounded-full" />
-            <div className="w-20 h-20 border-4 border-[#e11d48] border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
-          </div>
-
-          <p className="text-xl font-semibold text-gray-800 animate-pulse">
-            Loading categories...
-          </p>
-        </div>
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <p className="text-lg animate-pulse">Loading categories...</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Category Management</h1>
 
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(true);
-          }}
-          className="bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-900 transition"
-        >
-          + Add Category
-        </button>
+      {/* ⭐⭐⭐ STICKY TOP BAR (TITLE + BUTTON) ⭐⭐⭐ */}
+      <div className="sticky top-[70px] z-50 bg-white border-b py-4 mb-6 ">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Category Management</h1>
+
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+            className="bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-900 transition"
+          >
+            + Add Category
+          </button>
+        </div>
       </div>
 
-      {/* ======================= MODAL ======================= */}
+      {/* ⭐ MODAL FORM */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-[999]">
           <div className="bg-white p-6 rounded-2xl w-full max-w-2xl shadow-xl max-h-[90vh] overflow-y-auto">
 
-            {/* TOP BAR */}
+            {/* Modal Header */}
             <div className="flex justify-between items-center mb-4 border-b pb-3">
               <h2 className="text-xl font-semibold">
                 {editing ? "Edit Category" : "Add Category"}
@@ -196,31 +197,29 @@ export default function CategoryManagement() {
               </button>
             </div>
 
-            {/* FORM */}
+            {/* FORM CONTENT */}
             <div className="space-y-5">
               {/* Category Name */}
               <div>
-                <label className="font-medium text-sm">Category Name</label>
+                <label className="text-sm font-medium">Category Name</label>
                 <input
                   name="name"
                   value={form.name}
                   onChange={handleChange}
                   placeholder="Enter category name"
-                  className="border p-3 w-full rounded-lg mt-1 focus:ring-2 focus:ring-black/40 outline-none"
+                  className="border p-3 w-full rounded-lg mt-1"
                 />
               </div>
 
-              {/* Category Image Upload */}
+              {/* Category Image */}
               <div>
-                <label className="font-medium text-sm">Category Image</label>
+                <label className="text-sm font-medium">Category Image</label>
 
-                <label className="mt-2 flex items-center gap-3 cursor-pointer bg-gray-100 p-3 rounded-lg border hover:bg-gray-200 transition">
+                <label className="mt-2 flex items-center gap-3 cursor-pointer bg-gray-100 p-3 rounded-lg border">
                   <span className="bg-black text-white px-4 py-2 rounded-lg">
                     Upload
                   </span>
-                  <span className="text-gray-600">
-                    {form.image?.name || "Choose Image"}
-                  </span>
+                  <span>{form.image?.name || "Choose Image"}</span>
                   <input type="file" onChange={handleImageChange} className="hidden" />
                 </label>
 
@@ -230,18 +229,18 @@ export default function CategoryManagement() {
                     width={130}
                     height={130}
                     alt="preview"
-                    className="mt-3 rounded-lg border shadow-sm"
+                    className="mt-3 rounded-lg border"
                   />
                 )}
               </div>
 
               {/* SUBCATEGORIES */}
-              <div className="mt-4">
+              <div>
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-semibold">Subcategories</h3>
                   <button
                     onClick={addSubcategory}
-                    className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700"
+                    className="bg-blue-600 text-white px-3 py-1 rounded-lg"
                   >
                     + Add Subcategory
                   </button>
@@ -249,49 +248,41 @@ export default function CategoryManagement() {
 
                 <div className="space-y-3">
                   {form.subcategories.map((sub, i) => (
-                    <div key={i} className="border rounded-lg p-4 bg-gray-50 shadow-sm">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-sm font-medium">Subcategory Name</label>
-                          <input
-                            value={sub.name}
-                            onChange={(e) => updateSub(i, "name", e.target.value)}
-                            className="mt-1 w-full border rounded-lg p-2 focus:ring-2 focus:ring-black/40 outline-none"
-                          />
-                        </div>
+                    <div key={i} className="border rounded-lg p-4 bg-gray-50">
 
-                        <div>
-                          <label className="text-sm font-medium">Subcategory Image</label>
+                      {/* NAME */}
+                      <input
+                        value={sub.name}
+                        placeholder="Subcategory Name"
+                        onChange={(e) => updateSub(i, "name", e.target.value)}
+                        className="border p-2 rounded-lg w-full"
+                      />
 
-                          <label className="mt-1 flex items-center gap-3 cursor-pointer bg-white border p-2 rounded-lg hover:bg-gray-100 transition">
-                            <span className="bg-black text-white px-3 py-1 rounded">
-                              Upload
-                            </span>
-                            <span className="text-gray-600 text-sm">
-                              {sub.image?.name || "Choose Image"}
-                            </span>
-                            <input
-                              type="file"
-                              className="hidden"
-                              onChange={(e) => updateSubImage(i, e.target.files[0])}
-                            />
-                          </label>
+                      {/* IMAGE */}
+                      <label className="mt-2 block cursor-pointer bg-white border p-2 rounded-lg">
+                        <span className="bg-black text-white px-3 py-1 rounded">
+                          Upload
+                        </span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={(e) => updateSubImage(i, e.target.files[0])}
+                        />
+                      </label>
 
-                          {sub.preview && (
-                            <Image
-                              src={sub.preview}
-                              width={90}
-                              height={90}
-                              alt="sub"
-                              className="rounded-lg border shadow mt-3"
-                            />
-                          )}
-                        </div>
-                      </div>
+                      {sub.preview && (
+                        <Image
+                          src={sub.preview}
+                          width={90}
+                          height={90}
+                          className="rounded mt-2 border"
+                          alt=""
+                        />
+                      )}
 
                       <button
                         onClick={() => removeSub(i)}
-                        className="mt-3 bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm"
+                        className="mt-2 bg-red-600 text-white px-4 py-1 rounded-lg"
                       >
                         Remove
                       </button>
@@ -300,27 +291,25 @@ export default function CategoryManagement() {
                 </div>
               </div>
 
-              {/* SUBMIT BUTTON WITH LOADER */}
+              {/* SUBMIT BUTTON */}
               <button
                 onClick={handleSubmit}
                 disabled={loadingSubmit}
-                className="w-full bg-black text-white py-3 rounded-lg text-lg hover:bg-gray-900 transition disabled:opacity-60 flex items-center justify-center gap-3"
+                className="w-full bg-black text-white py-3 rounded-lg text-lg disabled:opacity-50"
               >
-                {loadingSubmit ? (
-                  <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  editing ? "Update Category" : "Create Category"
-                )}
+                {loadingSubmit ? "Saving..." : editing ? "Update Category" : "Create Category"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* CATEGORY LIST */}
+      {/* ===================== CATEGORY LIST ===================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {categories.map((cat) => (
-          <div key={cat._id} className="border p-4 rounded-xl shadow bg-white hover:shadow-md transition">
+          <div key={cat._id} className="border p-4 rounded-xl shadow bg-white">
+
+            {/* Category Image */}
             {cat.imageUrl && (
               <Image
                 src={cat.imageUrl}
@@ -333,8 +322,9 @@ export default function CategoryManagement() {
 
             <h3 className="font-bold text-xl">{cat.name}</h3>
 
+            {/* Subcategories */}
             {cat.subcategories.length > 0 && (
-              <ul className="mt-3 text-sm text-gray-700 ml-4 list-disc">
+              <ul className="mt-2 ml-4 list-disc text-gray-700 text-sm">
                 {cat.subcategories.map((s) => (
                   <li key={s._id}>{s.name}</li>
                 ))}
@@ -342,6 +332,7 @@ export default function CategoryManagement() {
             )}
 
             <div className="flex gap-3 mt-5">
+              {/* EDIT */}
               <button
                 onClick={() => {
                   setEditing(cat);
@@ -356,18 +347,20 @@ export default function CategoryManagement() {
                   });
                   setShowForm(true);
                 }}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
               >
                 Edit
               </button>
 
+              {/* DELETE */}
               <button
                 onClick={() => deleteCategory(cat._id)}
-                className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
+                className="flex-1 bg-red-600 text-white py-2 rounded-lg"
               >
                 Delete
               </button>
             </div>
+
           </div>
         ))}
       </div>

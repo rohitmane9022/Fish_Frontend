@@ -4,14 +4,6 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-/**
- * ProductManagement - Admin product create / update page
- * - Adds inStock support
- * - Adds a predefined tag button for "ready-to-cook"
- * - Allows manual tags input (comma separated)
- * - Handles edit/create, image preview, toggle stock
- */
-
 export default function ProductManagement() {
   const [allowed, setAllowed] = useState(false);
 
@@ -22,10 +14,9 @@ export default function ProductManagement() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
-  const [loading, setLoading] = useState(false); // submit loading
-  const [pageLoading, setPageLoading] = useState(true); // page loader ⭐ NEW
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
-  // formData stores fields
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -53,7 +44,6 @@ export default function ProductManagement() {
 
   const PREDEFINED_TAGS = ["ready-to-cook"];
 
-  // Fetch products
   const fetchProducts = () => {
     fetch("/api/products")
       .then((res) => res.json())
@@ -61,14 +51,12 @@ export default function ProductManagement() {
       .catch((err) => console.error("Error fetching products:", err));
   };
 
-  // LOGIN CHECK
   useEffect(() => {
     const logged = localStorage.getItem("adminLoggedIn");
     if (logged === "true") setAllowed(true);
     else window.location.href = "/admin/login";
   }, []);
 
-  // Fetch categories
   useEffect(() => {
     Promise.all([fetch("/api/categories"), fetch("/api/products")])
       .then(async ([catRes, prodRes]) => {
@@ -79,12 +67,11 @@ export default function ProductManagement() {
         setProducts(productData);
       })
       .catch((err) => console.error(err))
-      .finally(() => setPageLoading(false)); // hide full loader
+      .finally(() => setPageLoading(false));
   }, []);
 
   if (!allowed) return null;
 
-  // ⭐ FULL PAGE LOADING (before categories/products load)
   if (pageLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] py-20">
@@ -102,15 +89,11 @@ export default function ProductManagement() {
     );
   }
 
-  // Category + Subcategory
   const selectedCategory = categories.find(
     (cat) => cat.name === formData.category
   );
   const subcategories = selectedCategory?.subcategories || [];
 
-  // -----------------------------
-  // HANDLERS
-  // -----------------------------
   const handleCategoryChange = (e) => {
     setFormData({
       ...formData,
@@ -360,34 +343,35 @@ export default function ProductManagement() {
   return (
     <div className="max-w-6xl mx-auto my-10 px-4">
 
-      {/* Logout */}
-      <div className="flex justify-end mb-5">
-        <button
-          onClick={() => {
-            localStorage.removeItem("adminLoggedIn");
-            window.location.href = "/admin/login";
-          }}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg"
-        >
-          Logout
-        </button>
+      {/* ⭐ STICKY HEADER */}
+      <div className="sticky top-0 z-50 bg-white border-b py-4 mb-6">
+        <div className="flex justify-between items-center">
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+            className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800"
+          >
+            Create New Product
+          </button>
+
+          <button
+            onClick={() => {
+              localStorage.removeItem("adminLoggedIn");
+              window.location.href = "/admin/login";
+            }}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Product Management</h1>
+      {/* Title */}
+      <h1 className="text-3xl font-bold mb-6">Product Management</h1>
 
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(true);
-          }}
-          className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800"
-        >
-          Create New Product
-        </button>
-      </div>
-
-      {/* Form Modal */}
+      {/* FORM MODAL */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
@@ -425,7 +409,7 @@ export default function ProductManagement() {
                 className="border rounded-lg p-2 w-full min-h-20"
               />
 
-              {/* CATEGORY + SUBCATEGORY */}
+              {/* CATEGORY / SUBCATEGORY */}
               <div className="grid grid-cols-2 gap-4">
                 <select
                   name="category"
@@ -467,7 +451,7 @@ export default function ProductManagement() {
                 )}
               </div>
 
-              {/* PRICE GROUP */}
+              {/* PRICE FIELDS */}
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="number"
@@ -559,7 +543,7 @@ export default function ProductManagement() {
                     className="border rounded-lg p-2 flex-1"
                   />
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {formData.tagsArray.map((t) => (
                       <div
                         key={t}
