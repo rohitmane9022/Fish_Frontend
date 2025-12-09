@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Category from "@/app/model/Category";
+import cloudinary from "@/lib/cloudinary";
 
 // Custom sorting priority
 const priority = {
@@ -15,12 +16,11 @@ const priority = {
   "Paratha": 9,
 };
 
-// ✅ GET: All Categories
+// ========================= GET ALL CATEGORIES =========================
 export async function GET() {
   await connectDB();
   let categories = await Category.find();
 
-  // Apply sorting FIX
   categories = categories.sort(
     (a, b) => (priority[a.name] || 999) - (priority[b.name] || 999)
   );
@@ -28,39 +28,49 @@ export async function GET() {
   return NextResponse.json(categories);
 }
 
-// ✅ POST: Add Category
+// ========================= CREATE CATEGORY (POST) =========================
 export async function POST(req) {
-  await connectDB();
-  const formData = await req.formData();
+  try {
+    await connectDB();
+    const formData = await req.formData();
 
-  const name = formData.get("name");
-  const imageFile = formData.get("image");
-  const subcategories = formData.get("subcategories");
+    const name = formData.get("name");
+    const imageFile = formData.get("image");
+    const subcategories = formData.get("subcategories");
 
-  let imageUrl = null;
+    let imageUrl = null;
 
-  if (imageFile && typeof imageFile.name === "string") {
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const fileName = `${Date.now()}-${imageFile.name}`;
-    const fs = require("fs");
-    const path = require("path");
-    const filePath = path.join(process.cwd(), "public/uploads", fileName);
-    fs.writeFileSync(filePath, buffer);
-    imageUrl = `/uploads/${fileName}`;
+    // ⭐ Upload main category image to Cloudinary
+    if (imageFile && imageFile.name) {
+      const bytes = await imageFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const uploaded = await cloudinary.uploader.upload(
+        `data:${imageFile.type};base64,${buffer.toString("base64")}`,
+        { folder: "categories" }
+      );
+
+      imageUrl = uploaded.secure_url;
+    }
+
+    const category = new Category({
+      name,
+      imageUrl,
+      subcategories: subcategories ? JSON.parse(subcategories) : [],
+    });
+
+    await category.save();
+
+    return NextResponse.json({
+      success: true,
+      message: "Category created successfully",
+      data: category,
+    });
+
+  } catch (err) {
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
+    );
   }
-
-  const category = new Category({
-    name,
-    imageUrl,
-    subcategories: subcategories ? JSON.parse(subcategories) : [],
-  });
-
-  await category.save();
-
-  return NextResponse.json({
-    success: true,
-    message: "Category created successfully",
-    data: category,
-  });
 }

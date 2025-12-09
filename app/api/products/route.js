@@ -35,7 +35,8 @@ export async function POST(req) {
   // Convert numbers
   if (data.price) data.price = Number(data.price);
   if (data.originalPrice) data.originalPrice = Number(data.originalPrice);
-  if (data.serves) data.serves = Number(data.serves);
+  if (data.serves !== "") data.serves = Number(data.serves);
+else delete data.serves;
 
   // Convert booleans
   data.isHit = data.isHit === "true";

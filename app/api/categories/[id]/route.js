@@ -88,3 +88,33 @@ export async function PUT(req, context) {
     return NextResponse.json({ success: false, error: err.message });
   }
 }
+
+
+export async function DELETE(req, context) {
+  try {
+    await connectDB();
+
+    const { id } = await context.params;  // ✅ MUST AWAIT params
+
+    const deleted = await Category.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { success: false, message: "Category not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Category deleted successfully",
+    });
+
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
+    );
+  }
+}
