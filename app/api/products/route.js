@@ -3,7 +3,13 @@ import { connectDB } from "@/lib/db";
 import Product from "@/app/model/Product";
 import cloudinary from "@/lib/cloudinary";
 
-// GET all products
+// Utility: safely convert number fields
+const safeNumber = (value) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  const n = Number(value);
+  return isNaN(n) ? undefined : n;
+};
+
 export async function GET(req) {
   await connectDB();
 
@@ -17,32 +23,38 @@ export async function GET(req) {
   return NextResponse.json(products);
 }
 
-// POST product
 export async function POST(req) {
   await connectDB();
   const formData = await req.formData();
 
   const data = {};
+
+  // Extract non-file fields
   for (const [key, value] of formData.entries()) {
-    if (key !== "image") data[key] = value;
+    if (key !== "image") {
+      data[key] = value;
+    }
   }
 
-  // Convert JSON fields
+  // Convert JSON fields safely
   if (data.tags) data.tags = JSON.parse(data.tags);
   if (data.highlights) data.highlights = JSON.parse(data.highlights);
   if (data.nutrition) data.nutrition = JSON.parse(data.nutrition);
 
-  // Convert numbers
-  if (data.price) data.price = Number(data.price);
-  if (data.originalPrice) data.originalPrice = Number(data.originalPrice);
-  if (data.serves !== "") data.serves = Number(data.serves);
-else delete data.serves;
-
-  // Convert booleans
+  // Convert numbers safely
+  data.price = safeNumber(data.price);
+  data.originalPrice = safeNumber(data.originalPrice);
+  data.discount = safeNumber(data.discount);
+  data.serves = safeNumber(data.serves);
+  data.pieces = safeNumber(data.pieces);
+  data.weight = data.weight || ""; // keep as string
   data.isHit = data.isHit === "true";
-  data.inStock = data.inStock === "true" || data.inStock === true; // ⭐ ADDED
+  data.inStock = data.inStock === "true";
 
-  // CLOUDINARY UPLOAD
+  // Subcategory must exist but can be empty
+  if (!data.subcategory) data.subcategory = "";
+
+  // ---- CLOUDINARY ----
   const imageFile = formData.get("image");
   let imageUrl = null;
 
@@ -60,11 +72,7 @@ else delete data.serves;
 
   data.imageUrl = imageUrl;
 
-  // Ensure subcategory ALWAYS exists
-  if (!data.subcategory) {
-    data.subcategory = "";
-  }
-
+  // Create product
   const product = await Product.create(data);
 
   return NextResponse.json({

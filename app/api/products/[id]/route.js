@@ -3,10 +3,16 @@ import { connectDB } from "@/lib/db";
 import Product from "@/app/model/Product";
 import cloudinary from "@/lib/cloudinary";
 
-// PUT — Update Product
+const safeNumber = (value) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  const n = Number(value);
+  return isNaN(n) ? undefined : n;
+};
+
 export async function PUT(req, context) {
   await connectDB();
 
+  // ❗ FIX: Next.js App Router requires await
   const { id } = await context.params;
 
   try {
@@ -18,12 +24,18 @@ export async function PUT(req, context) {
 
       if (["tags", "highlights", "nutrition"].includes(key)) {
         updateData[key] = JSON.parse(value);
-      } else if (["price", "originalPrice", "serves"].includes(key)) {
-        updateData[key] = Number(value);
+
+      } else if (
+        ["price", "originalPrice", "discount", "serves", "pieces"].includes(key)
+      ) {
+        updateData[key] = safeNumber(value);
+
       } else if (key === "isHit") {
         updateData[key] = value === "true";
-      } else if (key === "inStock") {               // ⭐ ADDED
+
+      } else if (key === "inStock") {
         updateData[key] = value === "true";
+
       } else {
         updateData[key] = value;
       }
@@ -63,21 +75,23 @@ export async function PUT(req, context) {
     });
   } catch (err) {
     console.error("UPDATE ERROR:", err);
-    return NextResponse.json({ error: "Error updating product" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error updating product" },
+      { status: 500 }
+    );
   }
 }
 
-// DELETE — Remove Product
 export async function DELETE(req, context) {
   await connectDB();
 
+  // ❗ FIX: must await params
   const { id } = await context.params;
 
   try {
     const product = await Product.findById(id);
-    if (!product) {
+    if (!product)
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
 
     if (product.imageUrl) {
       const publicId = product.imageUrl.split("/").pop().split(".")[0];
@@ -92,6 +106,9 @@ export async function DELETE(req, context) {
     });
   } catch (err) {
     console.error("DELETE ERROR:", err);
-    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete product" },
+      { status: 500 }
+    );
   }
 }

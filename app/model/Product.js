@@ -32,7 +32,7 @@ const productSchema = new mongoose.Schema({
   pieces: { type: String, default: "" },
   serves: { type: Number, default: 1 },
 
-  price: { type: Number, required: true },
+  price: { type: String, required: true },
   originalPrice: Number,
   discount: String,
 
@@ -44,7 +44,9 @@ const productSchema = new mongoose.Schema({
 
   isHit: { type: Boolean, default: false },
   inStock: { type: Boolean, default: true },
-});
+  
+},
+{ timestamps: true });
 
 export default mongoose.models.Product ||
   mongoose.model("Product", productSchema);

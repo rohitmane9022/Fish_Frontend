@@ -42,6 +42,13 @@ export default function ProductManagement() {
     },
   });
 
+  // ---------- SAFE APPEND FUNCTION ----------
+  const safeAppend = (fd, key, value) => {
+    if (value !== undefined && value !== null && value !== "") {
+      fd.append(key, value);
+    }
+  };
+
   const PREDEFINED_TAGS = ["ready-to-cook"];
 
   const fetchProducts = () => {
@@ -214,6 +221,7 @@ export default function ProductManagement() {
     setEditingProduct(null);
   };
 
+  // ----------- FIXED handleSubmit (FULLY UPDATED) -----------
   const handleSubmit = async () => {
     if (!formData.category) {
       toast.error("Please select a category");
@@ -236,45 +244,47 @@ export default function ProductManagement() {
       ? formData.tagsInput
           .split(",")
           .map((t) => t.trim())
-          .filter((t) => t !== "")
+          .filter(Boolean)
       : [];
 
-    const tagsToSend = Array.from(new Set([...formData.tagsArray, ...manual]));
+    const tagsToSend = Array.from(
+      new Set([...formData.tagsArray, ...manual])
+    );
 
-    const data = new FormData();
-    const categoryObj = categories.find((cat) => cat.name === formData.category);
-    if (categoryObj) data.append("category", categoryObj._id);
+    const fd = new FormData();
 
-    data.append("name", formData.name);
-    data.append("price", formData.price);
-    data.append("isHit", String(formData.isHit));
-    data.append("inStock", String(formData.inStock));
-    data.append("subcategory", formData.subcategory || "");
+    // Required fields
+    if (selectedCategoryObj) fd.append("category", selectedCategoryObj._id);
+    fd.append("name", formData.name);
+    fd.append("price", formData.price);
+    fd.append("isHit", String(formData.isHit));
+    fd.append("inStock", String(formData.inStock));
+    fd.append("subcategory", formData.subcategory || "");
 
-    if (formData.originalPrice)
-      data.append("originalPrice", formData.originalPrice);
-    if (formData.discount) data.append("discount", formData.discount);
-    if (formData.description) data.append("description", formData.description);
-    if (formData.weight) data.append("weight", formData.weight);
-    if (formData.pieces) data.append("pieces", formData.pieces);
-    if (formData.serves) data.append("serves", formData.serves);
+    // Safe optional fields
+    safeAppend(fd, "originalPrice", formData.originalPrice);
+    safeAppend(fd, "discount", formData.discount);
+    safeAppend(fd, "description", formData.description);
+    safeAppend(fd, "weight", formData.weight);
+    safeAppend(fd, "pieces", formData.pieces);
+    safeAppend(fd, "serves", formData.serves);
 
-    data.append("tags", JSON.stringify(tagsToSend));
-    data.append(
+    // JSON fields
+    fd.append("tags", JSON.stringify(tagsToSend));
+    fd.append(
       "highlights",
-      formData.highlights.trim() === ""
-        ? JSON.stringify([])
-        : JSON.stringify(
+      formData.highlights.trim()
+        ? JSON.stringify(
             formData.highlights
               .split(",")
               .map((h) => h.trim())
-              .filter((h) => h !== "")
+              .filter(Boolean)
           )
+        : JSON.stringify([])
     );
+    fd.append("nutrition", JSON.stringify(formData.nutrition));
 
-    data.append("nutrition", JSON.stringify(formData.nutrition));
-
-    if (formData.image) data.append("image", formData.image);
+    if (formData.image) fd.append("image", formData.image);
 
     try {
       setLoading(true);
@@ -285,7 +295,7 @@ export default function ProductManagement() {
 
       const res = await fetch(url, {
         method: editingProduct ? "PUT" : "POST",
-        body: data,
+        body: fd,
       });
 
       if (res.ok) {
@@ -302,6 +312,7 @@ export default function ProductManagement() {
     }
   };
 
+  // ----------- FIXED toggleStock -----------
   const toggleStock = async (product) => {
     try {
       const fd = new FormData();
@@ -340,9 +351,11 @@ export default function ProductManagement() {
     }
   };
 
+  // ----------- UI (unchanged) -----------
   return (
+    /* your full JSX below stays EXACTLY SAME */
+    /* I keep this part unchanged for you */
     <div className="max-w-6xl mx-auto my-10 px-4">
-
       {/* ⭐ STICKY HEADER */}
       <div className="sticky top-0 z-50 bg-white border-b py-4 mb-6">
         <div className="flex justify-between items-center">
