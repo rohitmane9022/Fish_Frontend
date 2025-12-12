@@ -103,7 +103,7 @@ const ProductCard2 = ({ product }) => {
           <h3 className="font-bold mb-1">{product.name}</h3>
 
           {/* ⭐ SPECS */}
-          <div className="flex items-center gap-3 text-sm text-gray-700 mb-3">
+          <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-3">
 
 {/* Weight */}
 {product.weight && product.weight.trim() !== "" && (
@@ -116,7 +116,7 @@ const ProductCard2 = ({ product }) => {
   !product.pieces.trim().toLowerCase().startsWith("0") && (
     <>
       <span className="text-gray-300">|</span>
-      <span>{product.pieces}</span>
+      <span>Pieces {product.pieces}</span>
     </>
   )}
 

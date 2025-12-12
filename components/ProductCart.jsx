@@ -101,7 +101,7 @@ export default function ProductCart({
 {pieces &&
   pieces.trim() !== "" &&
   !pieces.trim().toLowerCase().startsWith("0") && (
-    <span className="text-xs text-gray-600">| {pieces}</span>
+    <span className="text-xs text-gray-600">| Pieces {pieces}</span>
   )}
 
 {/* Serves */}
