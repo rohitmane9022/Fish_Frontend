@@ -52,7 +52,7 @@ const ProductCard2 = ({ product }) => {
       } else {
         toast.error("Failed, try again");
       }
-    } catch (err) {
+    } catch {
       toast.error("Error sending request");
     } finally {
       setNotifyLoading(false);
@@ -61,7 +61,6 @@ const ProductCard2 = ({ product }) => {
 
   return (
     <>
-      {/* PRODUCT CARD */}
       <div
         onClick={() => router.push(`/product/${product._id}`)}
         className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition cursor-pointer border border-gray-100"
@@ -103,22 +102,49 @@ const ProductCard2 = ({ product }) => {
         <div className="p-4">
           <h3 className="font-bold mb-1">{product.name}</h3>
 
-          {/* ⭐ CONDITIONAL SPECS */}
+          {/* ⭐ SPECS */}
           <div className="flex items-center gap-3 text-sm text-gray-700 mb-3">
-            {product.weight && <span>{product.weight}</span>}
 
-            {product.pieces > 0 && (
-              <>
-                <span className="text-gray-300">|</span>
-                <span>{product.pieces} Pieces</span>
-              </>
+{/* Weight */}
+{product.weight && product.weight.trim() !== "" && (
+  <span>{product.weight}</span>
+)}
+
+{/* Pieces */}
+{product.pieces &&
+  product.pieces.trim() !== "" &&
+  !product.pieces.trim().toLowerCase().startsWith("0") && (
+    <>
+      <span className="text-gray-300">|</span>
+      <span>{product.pieces}</span>
+    </>
+  )}
+
+{/* Serves */}
+{Number(product.serves) > 0 && (
+  <>
+    <span className="text-gray-300">|</span>
+    <span>Serves {product.serves}</span>
+  </>
+)}
+
+</div>
+
+
+          {/* ⭐ PRICE */}
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xl font-bold text-gray-900">₹{product.price}</span>
+
+            {product.originalPrice && Number(product.originalPrice) > 0 && (
+              <span className="text-gray-400 line-through text-sm">
+                ₹{product.originalPrice}
+              </span>
             )}
 
-            {product.serves > 0 && (
-              <>
-                <span className="text-gray-300">|</span>
-                <span>Serves {product.serves}</span>
-              </>
+            {product.discount && Number(product.discount) > 0 && (
+              <span className="text-green-600 text-xs font-semibold">
+                {product.discount}% off
+              </span>
             )}
           </div>
 
@@ -132,15 +158,7 @@ const ProductCard2 = ({ product }) => {
                 notifyDone ? "bg-green-600 text-white" : "bg-white border border-[#e11d48] text-[#e11d48]"
               } py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2`}
             >
-              {notifyDone ? (
-                <>
-                  Done <Check size={18} />
-                </>
-              ) : (
-                <>
-                  Notify <Bell size={18} />
-                </>
-              )}
+              {notifyDone ? "Done" : "Notify"}
             </button>
           ) : quantity === 0 ? (
             <button

@@ -30,7 +30,7 @@ const productSchema = new mongoose.Schema({
 
   weight: { type: String, default: "" },
   pieces: { type: String, default: "" },
-  serves: { type: Number, default: 1 },
+  serves: { type: Number, default: 0 },
 
   price: { type: String, required: true },
   originalPrice: Number,

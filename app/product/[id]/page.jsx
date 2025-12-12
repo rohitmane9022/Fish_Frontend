@@ -119,7 +119,7 @@ const ProductDetails = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
-        {/* LEFT IMAGE */}
+        {/* IMAGE */}
         <div className="relative">
           <div className="rounded-3xl overflow-hidden shadow">
 
@@ -155,26 +155,35 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        {/* RIGHT DETAILS */}
+        {/* DETAILS */}
         <div className="flex flex-col">
 
           <h1 className="text-3xl font-bold mb-3">{product.name}</h1>
           <p className="text-gray-600 mb-6">{product.description}</p>
 
-          {/* ⭐ CONDITIONAL SPECS */}
-          <div className="flex gap-6 mb-6 border-b pb-6">
-            {product.weight && (
-              <span className="font-medium">⚖️ {product.weight}</span>
-            )}
+          {/* ⭐ SPECS (UPDATED) */}
+          {/* ⭐ SPECS (FINAL RULE APPLIED EVERYWHERE) */}
+<div className="flex gap-6 mb-6 border-b pb-6">
 
-            {product.pieces > 0 && (
-              <span className="font-medium">🍖 {product.pieces}</span>
-            )}
+{/* Weight */}
+{product.weight && product.weight.trim() !== "" && (
+  <span className="font-medium">⚖️ {product.weight}</span>
+)}
 
-            {product.serves > 0 && (
-              <span className="font-medium">👥 Serves {product.serves}</span>
-            )}
-          </div>
+{/* Pieces → string, hide if empty or starts with 0 */}
+{product.pieces &&
+  product.pieces.trim() !== "" &&
+  !product.pieces.trim().toLowerCase().startsWith("0") && (
+    <span className="font-medium">🍖 {product.pieces}</span>
+  )}
+
+{/* Serves → number, show only if > 0 */}
+{Number(product.serves) > 0 && (
+  <span className="font-medium">👥 Serves {product.serves}</span>
+)}
+
+</div>
+
 
           {/* Highlights */}
           {product.highlights?.length > 0 && (
@@ -192,28 +201,31 @@ const ProductDetails = () => {
 
           {/* Nutrition */}
           <div className="mb-6 text-gray-700 space-y-1">
-            <h3 className="font-semibold text-gray-500">Nutrition (per 100g)</h3>
+            <h3 className="font-semibold text-gray-500">Nutrition (100g)</h3>
             <p>Energy: {product.nutrition.energy}</p>
             <p>Carbs: {product.nutrition.carbohydrate}</p>
             <p>Fat: {product.nutrition.fat}</p>
             <p>Protein: {product.nutrition.protein}</p>
           </div>
 
-          {/* PRICE + BUTTON */}
+          {/* PRICE */}
           <div className="border-t pt-6">
             <div className="flex justify-between items-start mb-4">
 
               <div>
                 <div className="flex items-baseline gap-3 mb-2">
                   <span className="text-4xl font-bold">₹{product.price}</span>
-                  <span className="text-lg text-green-600 font-semibold">
-                    {product.discount} off
-                  </span>
+
+                  {product.discount && (
+                    <span className="text-lg text-green-600 font-semibold">
+                      {product.discount}% off
+                    </span>
+                  )}
                 </div>
 
                 <p className="text-gray-500 text-sm">
                   MRP:  
-                  <span className="line-through">₹{product.originalPrice}</span>
+                  <span className="line-through ml-1">₹{product.originalPrice}</span>
                 </p>
               </div>
 
@@ -227,20 +239,12 @@ const ProductDetails = () => {
                       : "bg-white border border-[#e11d48] text-[#e11d48]"
                   }`}
                 >
-                  {notifyDone ? (
-                    <>
-                      Done <Check size={18} />
-                    </>
-                  ) : (
-                    <>
-                      Notify Me <Bell size={18} />
-                    </>
-                  )}
+                  {notifyDone ? "Done" : "Notify Me"}
                 </button>
               ) : quantity === 0 ? (
                 <button
                   onClick={handleAddToCart}
-                  className="bg-[#e11d48] text-white px-9 py-3.5 rounded-lg font-bold flex items-center gap-2 shadow"
+                  className="bg-[#e11d48] text-white px-9 py-3.5 rounded-lg font-bold shadow"
                 >
                   Add to Cart +
                 </button>

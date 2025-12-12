@@ -29,32 +29,31 @@ export async function POST(req) {
 
   const data = {};
 
-  // Extract non-file fields
   for (const [key, value] of formData.entries()) {
-    if (key !== "image") {
-      data[key] = value;
-    }
+    if (key !== "image") data[key] = value;
   }
 
-  // Convert JSON fields safely
+  // JSON fields
   if (data.tags) data.tags = JSON.parse(data.tags);
   if (data.highlights) data.highlights = JSON.parse(data.highlights);
   if (data.nutrition) data.nutrition = JSON.parse(data.nutrition);
 
-  // Convert numbers safely
+  // Numbers
   data.price = safeNumber(data.price);
   data.originalPrice = safeNumber(data.originalPrice);
   data.discount = safeNumber(data.discount);
   data.serves = safeNumber(data.serves);
-  data.pieces = safeNumber(data.pieces);
-  data.weight = data.weight || ""; // keep as string
+
+  // ⭐ STRING FIELDS
+  data.weight = data.weight || "";
+  data.pieces = data.pieces || "";
+
   data.isHit = data.isHit === "true";
   data.inStock = data.inStock === "true";
 
-  // Subcategory must exist but can be empty
   if (!data.subcategory) data.subcategory = "";
 
-  // ---- CLOUDINARY ----
+  // IMAGE UPLOAD
   const imageFile = formData.get("image");
   let imageUrl = null;
 
@@ -72,7 +71,6 @@ export async function POST(req) {
 
   data.imageUrl = imageUrl;
 
-  // Create product
   const product = await Product.create(data);
 
   return NextResponse.json({

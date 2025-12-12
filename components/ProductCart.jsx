@@ -27,7 +27,7 @@ export default function ProductCart({
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    const product = {
+    addToCart({
       _id: id,
       name,
       imageUrl,
@@ -37,19 +37,7 @@ export default function ProductCart({
       weight,
       pieces,
       serves,
-    };
-    addToCart(product);
-  };
-
-  const handleIncrement = (e) => {
-    e.stopPropagation();
-    updateCartItemQuantity(id, quantity + 1);
-  };
-
-  const handleDecrement = (e) => {
-    e.stopPropagation();
-    if (quantity > 1) updateCartItemQuantity(id, quantity - 1);
-    else updateCartItemQuantity(id, 0);
+    });
   };
 
   return (
@@ -80,14 +68,16 @@ export default function ProductCart({
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              onClick={handleDecrement}
+              onClick={() => updateCartItemQuantity(id, quantity - 1)}
               className="text-red-500 hover:text-red-600"
             >
               <Minus size={18} />
             </button>
+
             <span className="font-semibold text-base">{quantity}</span>
+
             <button
-              onClick={handleIncrement}
+              onClick={() => updateCartItemQuantity(id, quantity + 1)}
               className="text-red-500 hover:text-red-600"
             >
               <Plus size={18} />
@@ -99,18 +89,30 @@ export default function ProductCart({
       <div className="space-y-2 p-2" onClick={onClick}>
         <h3 className="font-semibold text-base leading-6">{name}</h3>
 
+        {/* ⭐ CONDITIONAL SPECS */}
         <div className="flex items-center gap-1.5">
-          {weight && <p className="font-semibold text-sm">{weight}</p>}
 
-          {pieces > 0 && (
-            <span className="text-xs text-gray-600">| {pieces} Pieces</span>
-          )}
+{/* Weight */}
+{weight && weight.trim() !== "" && (
+  <p className="font-semibold text-sm">{weight}</p>
+)}
 
-          {serves > 0 && (
-            <span className="text-xs text-gray-600">| Serves {serves}</span>
-          )}
-        </div>
+{/* Pieces */}
+{pieces &&
+  pieces.trim() !== "" &&
+  !pieces.trim().toLowerCase().startsWith("0") && (
+    <span className="text-xs text-gray-600">| {pieces}</span>
+  )}
 
+{/* Serves */}
+{Number(serves) > 0 && (
+  <span className="text-xs text-gray-600">| Serves {serves}</span>
+)}
+
+</div>
+
+
+        {/* PRICE */}
         <div className="flex items-center gap-2">
           <span className="text-lg font-bold text-gray-900">₹{price}</span>
 
@@ -122,7 +124,7 @@ export default function ProductCart({
 
           {discount && (
             <span className="text-green-600 text-xs font-semibold">
-              {discount} off
+              {discount}% off
             </span>
           )}
         </div>

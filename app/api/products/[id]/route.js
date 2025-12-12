@@ -11,8 +11,6 @@ const safeNumber = (value) => {
 
 export async function PUT(req, context) {
   await connectDB();
-
-  // ❗ FIX: Next.js App Router requires await
   const { id } = await context.params;
 
   try {
@@ -25,10 +23,14 @@ export async function PUT(req, context) {
       if (["tags", "highlights", "nutrition"].includes(key)) {
         updateData[key] = JSON.parse(value);
 
-      } else if (
-        ["price", "originalPrice", "discount", "serves", "pieces"].includes(key)
-      ) {
+      } else if (["price", "originalPrice", "discount", "serves"].includes(key)) {
         updateData[key] = safeNumber(value);
+
+      } else if (key === "pieces") {
+        updateData.pieces = value || "";  // ⭐ ALWAYS STRING
+
+      } else if (key === "weight") {
+        updateData.weight = value || "";  // ⭐ ALWAYS STRING
 
       } else if (key === "isHit") {
         updateData[key] = value === "true";
@@ -45,8 +47,8 @@ export async function PUT(req, context) {
 
     const oldProduct = await Product.findById(id);
 
+    // IMAGE UPLOAD
     const imageFile = formData.get("image");
-
     if (imageFile && imageFile.name) {
       const bytes = await imageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
@@ -73,6 +75,7 @@ export async function PUT(req, context) {
       message: "Product updated!",
       data: updatedProduct,
     });
+
   } catch (err) {
     console.error("UPDATE ERROR:", err);
     return NextResponse.json(
@@ -81,7 +84,6 @@ export async function PUT(req, context) {
     );
   }
 }
-
 export async function DELETE(req, context) {
   await connectDB();
 
