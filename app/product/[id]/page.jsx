@@ -167,19 +167,19 @@ const ProductDetails = () => {
 
 {/* Weight */}
 {product.weight && product.weight.trim() !== "" && (
-  <span className="font-medium">⚖️ {product.weight}</span>
+  <span className="font-medium">Weight {product.weight}</span>
 )}
 
 {/* Pieces → string, hide if empty or starts with 0 */}
 {product.pieces &&
   product.pieces.trim() !== "" &&
   !product.pieces.trim().toLowerCase().startsWith("0") && (
-    <span className="font-medium">🍖 {product.pieces}</span>
+    <span className="font-medium">Pieces {product.pieces}</span>
   )}
 
 {/* Serves → number, show only if > 0 */}
 {Number(product.serves) > 0 && (
-  <span className="font-medium">👥 Serves {product.serves}</span>
+  <span className="font-medium">Serves {product.serves}</span>
 )}
 
 </div>
