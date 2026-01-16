@@ -13,12 +13,19 @@ export const metadata = {
   title: "Bombay Sea Food – Fresh Fish & Seafood Delivery in Mumbai",
   description: "Order online fresh fish, prawns, and seafood with Bombay Sea Food. Fast home delivery of premium quality, sustainable catch in Mumbai.",
   icons: {
-    icon: '/favicon.ico',          // or '/icon.png'
-    shortcut: '/favicon.ico',      // optional, for rel="shortcut icon"
-    apple: '/favicon.ico',         // optional, or use an apple-touch-icon.png
+    // This is what Google Search looks for (must be a square PNG)
+    icon: [
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    // Backup for older browsers
+    shortcut: '/favicon.ico',
+    // Specifically for Apple devices
+    apple: '/apple-touch-icon.png',
   },
+  // This links the manifest file you just moved to public/
+  manifest: '/site.webmanifest',
 };
-
 
 
 export default function RootLayout({ children }) {
@@ -29,23 +36,23 @@ export default function RootLayout({ children }) {
         <Toaster position="top-right" />
           <Suspense fallback={null}>
             
-            {/* Header */}
+            
             <Header />
 
-            {/* Main Content */}
+            
             <main className="flex-1 "> 
-              {/* ⬅ pb-28 ensures content doesn't hide behind mobile nav */}
+             
               {children}
               <SpeedInsights />
             </main>
 
-            {/* Footer */}
+            
             <SiteFooter />
 
-            {/* Mobile Bottom Cart Popup */}
+           
             <CartPopup />
 
-            {/* Mobile Bottom Navigation */}
+            
             <MobileNav />
 
           </Suspense>
